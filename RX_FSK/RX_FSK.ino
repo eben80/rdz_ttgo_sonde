@@ -23,6 +23,9 @@
 #include "mqtt.h"
 #include "esp_heap_caps.h"
 //#define ESP_MEM_DEBUG 1
+#define DEVICE_GPS_LOG
+char buffer[85];
+MicroNMEA nmea(buffer, sizeof(buffer));
 int e;
 
 enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB };
@@ -414,6 +417,12 @@ void addSondeStatus(char *ptr, int i)
     sprintf(ptr + strlen(ptr), " (ser: %s)", s->ser);
   }
   sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg;</td></tr>\n", s->lat, s->lon, s->alt, (s->hs / 1000 * 3600), s->vs, s->dir);
+#ifdef DEVICE_GPS_LOG
+  if (nmea.isValid())
+  {
+    sprintf(ptr + strlen(ptr), "<tr><td>Tracker GPS: %.6f, %.6f sats=%d heading=%ld&deg; hdop=%d</td></tr>\n", float(nmea.getLatitude()) / 1000000, float(nmea.getLongitude()) / 1000000, nmea.getNumSatellites(), nmea.getCourse() / 1000, nmea.getHDOP());
+  }
+#endif
   const time_t t = s->time;
   ts = *gmtime(&t);
   sprintf(ptr + strlen(ptr), "<tr><td>Frame# %d, Sats=%d, %04d-%02d-%02d %02d:%02d:%02d</td></tr>",
@@ -1118,8 +1127,7 @@ void initTouch() {
   }
 }
 
-char buffer[85];
-MicroNMEA nmea(buffer, sizeof(buffer));
+
 
 
 
