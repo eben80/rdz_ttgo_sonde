@@ -413,14 +413,14 @@ void addSondeStatus(char *ptr, int i)
   if (s->validID && (TYPE_IS_DFM(s->type) || TYPE_IS_METEO(s->type)) ) {
     sprintf(ptr + strlen(ptr), " (ser: %s)", s->ser);
   }
-  sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm</td></tr>\n", s->lat, s->lon, s->alt);
+  sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg;</td></tr>\n", s->lat, s->lon, s->alt, (s->hs / 1000 * 3600), s->vs, s->dir);
   const time_t t = s->time;
   ts = *gmtime(&t);
   sprintf(ptr + strlen(ptr), "<tr><td>Frame# %d, Sats=%d, %04d-%02d-%02d %02d:%02d:%02d</td></tr>",
           s->frame, s->sats, ts.tm_year + 1900, ts.tm_mon + 1, ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec + s->sec);
   if (s->type == STYPE_RS41) {
-    sprintf(ptr + strlen(ptr), "<tr><td>Burst-KT=%d Launch-KT=%d Countdown=%d (vor %ds)</td></tr>\n",
-            s->burstKT, s->launchKT, s->countKT, ((uint16_t)s->frame - s->crefKT));
+    sprintf(ptr + strlen(ptr), "<tr><td>Burst-KT=%d Launch-KT=%d Countdown=%d (vor %ds) RSSI =%ddB</td></tr>\n",
+            s->burstKT, s->launchKT, s->countKT, ((uint16_t)s->frame - s->crefKT), (s->rssi / 2));
   }
   sprintf(ptr + strlen(ptr), "<tr><td><a target=\"_empty\" href=\"geo:%.6f,%.6f\">GEO-App</a> - ", s->lat, s->lon);
   sprintf(ptr + strlen(ptr), "<a target=\"_empty\" href=\"https://wetterson.de/karte/?%s\">wetterson.de</a> - ", s->id);
