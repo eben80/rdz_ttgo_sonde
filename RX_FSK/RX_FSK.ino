@@ -1,4 +1,4 @@
-// #define USE_SDCARD
+#define USE_SDCARD 2
 #include <axp20x.h>
 
 #include <WiFi.h>
@@ -23,6 +23,10 @@
 #include "rs92gps.h"
 #include "mqtt.h"
 #include "esp_heap_caps.h"
+#ifdef USE_SDCARD
+#include "sdcard.h"
+#endif
+
 //#define ESP_MEM_DEBUG 1
 #define DEVICE_GPS_LOG
 char buffer[85];
@@ -1738,6 +1742,10 @@ void setup()
 
   WiFi.onEvent(WiFiEvent);
   getKeyPress();    // clear key buffer
+
+#ifdef USE_SDCARD
+sdcard_init();
+#endif
 }
 
 void enterMode(int mode) {
