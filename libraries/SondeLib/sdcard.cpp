@@ -2,7 +2,7 @@
 
 // Local logging tag
 static const char TAG[] = __FILE__;
-
+#define FS_NO_GLOBALS 
 #include "sdcard.h"
 #include "mySD.h"
 #define USE_SDCARD 2
@@ -91,7 +91,7 @@ void createFile(void) {
 #if USE_SDCARD == 1
       fileSDCard = SD.open(bufferFilename, FILE_WRITE);
 #elif USE_SDCARD == 2
-      fileSDCard = SD_MMC.open(bufferFilename, FILE_WRITE);
+      fileSDCard = SD_MMC.open(bufferFilename, 2);
 #endif
 
       if (fileSDCard) {

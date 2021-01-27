@@ -1,3 +1,4 @@
+#define FS_NO_GLOBALS 
 #ifndef _SDCARD_H
 #define _SDCARD_H
 #define USE_SDCARD 2

@@ -824,7 +824,7 @@ static uint8_t ACTION(char c) {
 }
 
 
-int Display::countEntries(File f) {
+int Display::countEntries(fs::File f) {
 	int pos = f.position();
 	int n = 0;
 	while(1) {

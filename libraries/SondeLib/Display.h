@@ -1,4 +1,5 @@
 
+#define FS_NO_GLOBALS 
 #ifndef Display_h
 #define Display_h
 
@@ -130,7 +131,7 @@ private:
 	int fontsma=0, fontlar=1;
 	uint16_t colfg, colbg;
 	static void circ(uint16_t *bm, int16_t w, int16_t x0, int16_t y0, int16_t r, uint16_t fg, boolean fill, uint16_t bg);
-	static int countEntries(File f);
+	static int countEntries(fs::File f);
 	void calcGPS();
 	int gpsDist; // -1: invalid
 	int gpsDir, gpsBear;   // 0..360; -1: invalid

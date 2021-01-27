@@ -1,4 +1,5 @@
 #define USE_SDCARD 2
+#define FS_NO_GLOBALS 
 #include <axp20x.h>
 
 #include <WiFi.h>
@@ -167,7 +168,7 @@ char message[10240 * 4]; //needs to be large enough for all forms (not checked i
 ///////////////////////// Functions for Reading / Writing QRG list from/to qrg.txt
 
 void setupChannelList() {
-  File file = SPIFFS.open("/qrg.txt", "r");
+  fs::File file = SPIFFS.open("/qrg.txt", "r");
   if (!file) {
     Serial.println("There was an error opening the file '/qrg.txt' for reading");
     return;
@@ -275,7 +276,7 @@ const char *handleQRGPost(AsyncWebServerRequest *request) {
   char label[10];
   // parameters: a_i, f_1, t_i  (active/frequency/type)
 #if 1
-  File file = SPIFFS.open("/qrg.txt", "w");
+  fs::File file = SPIFFS.open("/qrg.txt", "w");
   if (!file) {
     Serial.println("Error while opening '/qrg.txt' for writing");
     return "Error while opening '/qrg.txt' for writing";
@@ -332,7 +333,7 @@ struct {
 // FIXME: For now, we don't uspport wifi networks that contain newline or null characters
 // ... would require a more sophisicated file format (currently one line SSID; one line Password
 void setupWifiList() {
-  File file = SPIFFS.open("/networks.txt", "r");
+  fs::File file = SPIFFS.open("/networks.txt", "r");
   if (!file) {
     Serial.println("There was an error opening the file '/networks.txt' for reading");
     networks[0].id = "RDZsonde";
@@ -379,7 +380,7 @@ const char *handleWIFIPost(AsyncWebServerRequest *request) {
   char label[10];
   // parameters: a_i, f_1, t_i  (active/frequency/type)
 #if 1
-  File f = SPIFFS.open("/networks.txt", "w");
+  fs::File f = SPIFFS.open("/networks.txt", "w");
   if (!f) {
     Serial.println("Error while opening '/networks.txt' for writing");
     return "Error while opening '/networks.txt' for writing";
@@ -467,7 +468,7 @@ const char *createStatusForm() {
 
 
 void setupConfigData() {
-  File file = SPIFFS.open("/config.txt", "r");
+  fs::File file = SPIFFS.open("/config.txt", "r");
   if (!file) {
     Serial.println("There was an error opening the file '/config.txt' for reading");
     return;
@@ -659,7 +660,7 @@ const char *handleConfigPost(AsyncWebServerRequest *request) {
   // parameters: a_i, f_1, t_i  (active/frequency/type)
   Serial.println("Handling post request");
 #if 1
-  File f = SPIFFS.open("/config.txt", "w");
+  fs::File f = SPIFFS.open("/config.txt", "w");
   if (!f) {
     Serial.println("Error while opening '/config.txt' for writing");
     return "Error while opening '/config.txt' for writing";
@@ -774,7 +775,7 @@ const char *handleControlPost(AsyncWebServerRequest *request) {
 const char *createEditForm(String filename) {
   Serial.println("Creating edit form");
   char *ptr = message;
-  File file = SPIFFS.open("/" + filename, "r");
+  fs::File file = SPIFFS.open("/" + filename, "r");
   if (!file) {
     Serial.println("There was an error opening the file '/config.txt' for reading");
     return "<html><head><title>File not found</title></head><body>File not found</body></html>";
@@ -833,7 +834,7 @@ const char *handleEditPost(AsyncWebServerRequest *request) {
     Serial.println("File is empty. Not written.");
     return NULL;
   }
-  File file = SPIFFS.open("/" + filename, "w");
+  fs::File file = SPIFFS.open("/" + filename, "w");
   if (!file) {
     Serial.println("There was an error opening the file '/" + filename + "'for writing");
     return "";
