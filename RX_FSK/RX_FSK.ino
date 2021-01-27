@@ -1876,12 +1876,20 @@ void loopDecoder() {
     }
     Serial.println("");
   }
+#if 0
   if (!rdzclient.connected()) {
     rdzclient = rdzserver.available();
     if(rdzclient.connected()) {
       Serial.println("RDZ JSON socket: new connection");
     }
   }
+#else
+  if (rdzserver.hasClient()) {
+    Serial.println("TCP JSON socket: new connection");
+    if(rdzclient) rdzclient.stop();
+    rdzclient = rdzserver.available();
+  }
+#endif
   if(rdzclient.available()) {
     Serial.print("RDZ JSON socket: received ");
     while(rdzclient.available()) {
@@ -1900,10 +1908,10 @@ void loopDecoder() {
     Serial.println("");
   }
   // wifi (axudp) or bluetooth (bttnc) active => send packet
-  if ((res & 0xff) == 0 && (connected || tncclient.connected() || rdzclient.connected() )) {
+  SondeInfo *s = &sonde.sondeList[rxtask.receiveSonde];
+  if ((res & 0xff) == 0 && (connected || tncclient.connected() )) {
     //Send a packet with position information
     // first check if ID and position lat+lonis ok
-    SondeInfo *s = &sonde.sondeList[rxtask.receiveSonde];
 
     if (s->validID && ((s->validPos & 0x03) == 0x03)) {
       const char *str = aprs_senddata(s, sonde.config.call, sonde.config.udpfeed.symbol);
@@ -1923,10 +1931,27 @@ void loopDecoder() {
         Serial.print("sending: "); Serial.println(raw);
         tncclient.write(raw, rawlen);
       }
-      if (rdzclient.connected()) {
+    }
+  
+
+    // send to MQTT if enabled
+    if (connected && mqttEnabled) {
+      Serial.println("Sending sonde info via MQTT");
+      mqttclient.publishPacket(s);
+    }
+
+    // also send to web socket
+    //TODO
+  }
+  // always send data, even if not valid....
+  if (rdzclient.connected()) {
         Serial.println("Sending position via TCP as rdzJSON");
         char raw[1024];
+	const char *typestr = s->typestr;
+	if(*typestr==0) typestr = sondeTypeStr[s->type];
         int len = snprintf(raw, 1024, "{"
+	"\"res\": %d,"
+	"\"type\": \"%s\","
         "\"active\": %d,"
         "\"freq\": %.2f,"
         "\"id\": \"%s\","
@@ -1947,12 +1972,13 @@ void loopDecoder() {
         "\"validTime\": %d,"
         "\"rssi\": %d,"
         "\"afc\": %d,"
-        "\"rxStat\": \"%s\","
         "\"launchKT\": %d,"
         "\"burstKT\": %d,"
         "\"countKT\": %d,"
         "\"crefKT\": %d"
         "}\n",
+	res&0xff,
+	typestr,
         (int)s->active,
         s->freq,
         s->id,
@@ -1973,7 +1999,6 @@ void loopDecoder() {
         (int)s->validTime,
         s->rssi,
         s->afc,
-        s->rxStat,
         s->launchKT,
         s->burstKT,
         s->countKT,
@@ -1981,17 +2006,6 @@ void loopDecoder() {
         );
 
         rdzclient.write(raw, len>1024?1024:len);
-      }
-    }
-
-    // send to MQTT if enabled
-    if (connected && mqttEnabled) {
-      Serial.println("Sending sonde info via MQTT");
-      mqttclient.publishPacket(s);
-    }
-
-    // also send to web socket
-    //TODO
   }
   Serial.print("updateDisplay started... ");
   if (forceReloadScreenConfig) {
