@@ -445,13 +445,7 @@ void addSondeStatus(char *ptr, int i)
   if (s->validID && (TYPE_IS_DFM(s->type) || TYPE_IS_METEO(s->type)) ) {
     sprintf(ptr + strlen(ptr), " (ser: %s)", s->ser);
   }
-  sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg;</td></tr>\n", s->lat, s->lon, s->alt, (s->hs / 1000 * 3600), s->vs, s->dir);
-#ifdef DEVICE_GPS_LOG
-  if (nmea.isValid())
-  {
-    sprintf(ptr + strlen(ptr), "<tr><td>Tracker GPS: %.6f, %.6f sats=%d heading=%ld&deg; hdop=%d</td></tr>\n", float(nmea.getLatitude()) / 1000000, float(nmea.getLongitude()) / 1000000, nmea.getNumSatellites(), nmea.getCourse() / 1000, nmea.getHDOP());
-  }
-#endif
+  sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg; temperature=%.1f&deg;C rH=%.1f&percnt; temprHsensor=%.1f&deg;C</td></tr>\n", s->lat, s->lon, s->alt, (s->hs / 1000 * 3600), s->vs, s->dir, s->temperature, s->relativeHumidity, s->tempRHSensor);
   const time_t t = s->time;
   ts = *gmtime(&t);
   sprintf(ptr + strlen(ptr), "<tr><td>Frame# %d, Sats=%d, %04d-%02d-%02d %02d:%02d:%02d</td></tr>",
@@ -460,6 +454,12 @@ void addSondeStatus(char *ptr, int i)
     sprintf(ptr + strlen(ptr), "<tr><td>Burst-KT=%d Launch-KT=%d Countdown=%d (vor %ds) RSSI =-%d.%cdBm</td></tr>\n",
             s->burstKT, s->launchKT, s->countKT, ((uint16_t)s->frame - s->crefKT), sonde.si()->rssi/2, (sonde.si()->rssi&1)?'5':'0');
   }
+#ifdef DEVICE_GPS_LOG
+  if (nmea.isValid())
+  {
+    sprintf(ptr + strlen(ptr), "<tr><td>Tracker GPS: %.6f, %.6f sats=%d heading=%ld&deg; hdop=%d</td></tr>\n", float(nmea.getLatitude()) / 1000000, float(nmea.getLongitude()) / 1000000, nmea.getNumSatellites(), nmea.getCourse() / 1000, nmea.getHDOP());
+  }
+#endif
   sprintf(ptr + strlen(ptr), "<tr><td><a target=\"_empty\" href=\"geo:%.6f,%.6f\">GEO-App</a> - ", s->lat, s->lon);
   sprintf(ptr + strlen(ptr), "<a target=\"_empty\" href=\"https://wetterson.de/karte/?%s\">wetterson.de</a> - ", s->id);
   sprintf(ptr + strlen(ptr), "<a target=\"_empty\" href=\"https://radiosondy.info/sonde_archive.php?sondenumber=%s\">radiosondy.info</a> - ", s->id);
