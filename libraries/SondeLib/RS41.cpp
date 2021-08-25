@@ -17,6 +17,7 @@
 static byte data[800];
 static int dpos = 0;
 
+
 #if 0
 // subframe is never used?
 static byte subframe[51*16]; // 816 subframe bytes
@@ -147,6 +148,7 @@ struct subframeBuffer {
     };
 };
 // moved global variable "calibration" to sondeInfo->extra
+
 
 static uint16_t CRCTAB[256];
 
@@ -513,6 +515,7 @@ static void posrs41(const byte b[], uint32_t b_len, uint32_t p)
       sonde.si()->validPos = 0x7f;
 } /* end posrs41() */
 
+
 void ProcessSubframe( byte *subframeBytes, int subframeNumber ) {
    // the total subframe consists of 51 rows, each row 16 bytes
    // based on https://github.com/bazjo/RS41_Decoding/tree/master/RS41-SGP#Subframe 
@@ -528,6 +531,7 @@ void ProcessSubframe( byte *subframeBytes, int subframeNumber ) {
    // subframeReceived[subframeNumber] = true; // mark this row of the total subframe as complete
 
    #if 0
+
       Serial.printf("subframe number: 0x%02X\n", subframeNumber );
       Serial.print("subframe values: ");
       for ( int i = 0; i < 16; i++ ) {
@@ -539,18 +543,23 @@ void ProcessSubframe( byte *subframeBytes, int subframeNumber ) {
       for ( int j = 0; j<51; j++ ) {
          Serial.printf("%03X ", j*16);
          for ( int i = 0; i < 16; i++ ) {
+
             Serial.printf( "%02X ", s.rawData[j*16+i] ); 
+
          }
          Serial.println();
       }
       Serial.println();
+
    #endif   
+
 }
 
 /* Find the water vapor saturation pressure for a given temperature.
  * Uses the Hyland and Wexler equation with coefficients for T < 0°C.
  */
 // taken from https://github.com/einergehtnochrein/ra-firmware
+
 static float _RS41_waterVaporSaturationPressure (float Tcelsius)
 {
     /* Convert to Kelvin */
@@ -636,6 +645,7 @@ float GetRAHumidity( uint32_t humCurrent, uint32_t humMin, uint32_t humMax, floa
             * _RS41_waterVaporSaturationPressure(sensorTemp)
             / _RS41_waterVaporSaturationPressure(externalTemp);
 
+
    return RH;
 }
 
@@ -715,6 +725,7 @@ int RS41::decode41(byte *data, int maxlen)
 				sonde.si()->countKT = cntdown;
 				sonde.si()->crefKT = fnr;
 			}
+
 #if 0
          // process this subframe 
          int subframeOffset = 24; // 24 = 0x18, start of subframe data
@@ -725,6 +736,7 @@ int RS41::decode41(byte *data, int maxlen)
 			ProcessSubframe( data+p+24, calnr );
 
 			}
+
 			// TODO: some more data
 			break;
 		case '|': // date
@@ -743,6 +755,7 @@ int RS41::decode41(byte *data, int maxlen)
 		case '{': // pos
 			posrs41(data+p, len, 0);
 			break;
+
 		case 'z': // 0x7a is character z - 7A-MEAS temperature and humidity frame
          {
       		uint32_t tempMeasMain = getint24(data, 560, p+0);
@@ -758,10 +771,12 @@ int RS41::decode41(byte *data, int maxlen)
 			   uint32_t pressureRef1 = getint24(data, 560, p+30);
 			   uint32_t pressureRef2 = getint24(data, 560, p+33);
             #if 0
+
                Serial.printf( "External temp: tempMeasMain = %ld, tempMeasRef1 = %ld, tempMeasRef2 = %ld\n", tempMeasMain, tempMeasRef1, tempMeasRef2 );
                Serial.printf( "Rel  Humidity: humidityMain = %ld, humidityRef1 = %ld, humidityRef2 = %ld\n", humidityMain, humidityRef1, humidityRef2 );
                Serial.printf( "Humid  sensor: tempHumiMain = %ld, tempHumiRef1 = %ld, tempHumiRef2 = %ld\n", tempHumiMain, tempHumiRef1, tempHumiRef2 );
                Serial.printf( "Pressure sens: pressureMain = %ld, pressureRef1 = %ld, pressureRef2 = %ld\n", pressureMain, pressureRef1, pressureRef2 );
+
             #endif
    	    struct subframeBuffer *calibration = (struct subframeBuffer *)sonde.si()->extra;
 #if 0
@@ -799,6 +814,7 @@ int RS41::decode41(byte *data, int maxlen)
 
 
 		default:
+
 			break;
 		}}
 		p += len;

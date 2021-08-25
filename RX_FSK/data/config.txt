@@ -8,8 +8,12 @@
 #button_pin=0
 #button2_pin=255
 #button2_axp=0
+button_pin=140
+button2_pin=142
+button2_axp=0
+touch_thresh=40
 # LED port
-#led_pout=-1
+led_pout=25
 # OLED Setup is depending on hardware of LoRa board
 # TTGO v1:  SDA=4  SCL=15, RST=16 
 # TTGO v2:  SDA=21 SCL=22, RST=16
@@ -25,9 +29,13 @@
 #tft_rs=2
 #tft_cs=0
 tft_orient=1
-#tft_spifreq=40000000
-#gps_rxd=-1
-#gps_txd=-1
+#tft_modeflip=0
+gps_rxd=39
+gps_txd=-1
+
+# Show AFC value (for RS41 and M10/M20, maybe also DFM, but not useful for RS92)
+showafc=1
+
 # Frequency correction, in Hz
 # freqofs=0
 #-------------------------------#
@@ -40,16 +48,18 @@ wifi=3
 # TCP/IP KISS TNC in port 14590 for APRSdroid (0=disabled, 1=enabled)
 kisstnc.active = 1
 
-# which screens file to use (0: automated selection based on display type and orientation, i>0: screens${i}.txt
-# predefined: 1: for OLED, 2: for ILI9225; 3: for ILI9225 (portrait mode); 4: for ILI9431; 5: for ILI9431 (portrait mode)
-# screenfile=2
+
+# which screens file to use (0: screens.txt, i>0: screens${i}.txt
+# 0: old version; 1: for OLED, 2: for TFT; 3: for TFT (portrait mode)
+screenfile=1
+
 # display configuration. List of "displays"
 # first entry: "Scanner" display
 # second entry: default "Receiver" display
 # additional entries: alternative receiver display, activated by button
-display=0,1,2,3,4
+display=0,4,5
 # set to -1 to disable (used for "N" values in timers in screens.txt). Value in seconds
-norx_timeout=20
+norx_timeout=-1
 #-------------------------------#
 # Spectrum display settings
 #-------------------------------#
