@@ -35,6 +35,7 @@ gps_txd=-1
 
 # Show AFC value (for RS41 and M10/M20, maybe also DFM, but not useful for RS92)
 showafc=1
+
 # Frequency correction, in Hz
 # freqofs=0
 #-------------------------------#
@@ -47,9 +48,11 @@ wifi=3
 # TCP/IP KISS TNC in port 14590 for APRSdroid (0=disabled, 1=enabled)
 kisstnc.active = 1
 
+
 # which screens file to use (0: screens.txt, i>0: screens${i}.txt
 # 0: old version; 1: for OLED, 2: for TFT; 3: for TFT (portrait mode)
 screenfile=1
+
 # display configuration. List of "displays"
 # first entry: "Scanner" display
 # second entry: default "Receiver" display
@@ -118,11 +121,24 @@ tcp.idformat=0
 # data not sanitized / quality checked, outliers not filtered out
 mqtt.active=0
 mqtt.id=rdz_sonde_server
-mqtt.host=
+mqtt.ip=192.168.1.5
 mqtt.port=1883
 mqtt.username=
 mqtt.password=
 mqtt.prefix=rdz_sonde_server/
+#-------------------------------#
+# Sondehub v2 settings
+#-------------------------------#
+# Sondehub v2 DB settings
+sondehub.active=0
+sondehub.chase=0
+sondehub.host=api.v2.sondehub.org
+sondehub.callsign=CHANGEME_RDZTTGO
+sondehub.lat=
+sondehub.lon=
+sondehub.alt=
+sondehub.antenna=
+sondehub.email=
 #-------------------------------#
 # EOF
 #-------------------------------#
