@@ -1,4 +1,3 @@
-// #define USE_SDCARD
 #include <axp20x.h>
 
 #include "features.h"
@@ -27,9 +26,6 @@
 #endif
 #include "esp_heap_caps.h"
 //#define ESP_MEM_DEBUG 1
-#define DEVICE_GPS_LOG
-char buffer[85];
-MicroNMEA nmea(buffer, sizeof(buffer));
 int e;
 
 enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB };
@@ -115,8 +111,8 @@ static unsigned long specTimer;
 void enterMode(int mode);
 void WiFiEvent(WiFiEvent_t event);
 
-// char buffer[85];
-// MicroNMEA nmea(buffer, sizeof(buffer));
+char buffer[85];
+MicroNMEA nmea(buffer, sizeof(buffer));
 
 // Read line from file, independent of line termination (LF or CR LF)
 String readLine(Stream &stream) {
