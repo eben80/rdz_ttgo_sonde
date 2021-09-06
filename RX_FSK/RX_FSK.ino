@@ -1450,7 +1450,6 @@ void initTouch() {
 
 
 
-
 /// Arrg. MicroNMEA changes type definition... so lets auto-infer type
 template<typename T>
 //void unkHandler(const MicroNMEA& nmea) {
@@ -1657,7 +1656,7 @@ void IRAM_ATTR touchISR2() {
 void checkTouchButton(Button & button) {
   if (button.isTouched) {
     int tmp = touchRead(button.pin & 0x7f);
-    // Serial.printf("touch read %d: value is %d\n", button.pin & 0x7f, tmp);
+    Serial.printf("touch read %d: value is %d\n", button.pin & 0x7f, tmp);
     if (tmp > sonde.config.touch_thresh + 5) {
       button.isTouched = false;
       unsigned long elapsed = my_millis() - button.keydownTime;
