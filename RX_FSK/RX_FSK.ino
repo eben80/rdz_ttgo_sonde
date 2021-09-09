@@ -26,6 +26,7 @@
 #endif
 #include "esp_heap_caps.h"
 //#define ESP_MEM_DEBUG 1
+#define DEVICE_GPS_LOG
 int e;
 
 enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB };
