@@ -3167,6 +3167,9 @@ void sondehub_station_update(WiFiClient *client, struct st_sondehub *conf) {
       sprintf(w, "\"uploader_position\": [null,null,null]");
     }
     w += strlen(w);
+  } else {
+    sprintf(w, "\"uploader_position\": [null,null,null]");
+    w += strlen(w);
   }
 
   // otherwise (in SH_LOC_NONE mode) we dont include any position info
@@ -3364,8 +3367,7 @@ void sondehub_send_data(WiFiClient * client, SondeInfo * s, struct st_sondehub *
   if (chase == SH_LOC_CHASE) {
     if (gpsPos.valid && gpsPos.lat != 0 && gpsPos.lon != 0) {
       sprintf(w,
-              "\"uploader_position\": [%.6f,%.6f,%d],"
-              "\"mobile\": true",
+              "\"uploader_position\": [%.6f,%.6f,%d]",
               gpsPos.lat, gpsPos.lon, gpsPos.alt);
     } else {
       sprintf(w, "\"uploader_position\": [null,null,null]");
@@ -3381,6 +3383,9 @@ void sondehub_send_data(WiFiClient * client, SondeInfo * s, struct st_sondehub *
     } else {
       sprintf(w, "\"uploader_position\": [null,null,null]");
     }
+    w += strlen(w);
+  } else {
+    sprintf(w, "\"uploader_position\": [null,null,null]");
     w += strlen(w);
   }
 
