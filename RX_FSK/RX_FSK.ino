@@ -1,33 +1,33 @@
-#include <axp20x.h>
 
 #include "features.h"
+#include "version.h"
 
+#include "axp20x.h"
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
-//#include <U8x8lib.h>
-//#include <U8g2lib.h>
 #include <SPI.h>
 #include <Update.h>
 #include <ESPmDNS.h>
 #include <MicroNMEA.h>
 #include <Ticker.h>
-#include <SX1278FSK.h>
-#include <Sonde.h>
-#include <Display.h>
-#include <Scanner.h>
-#include <aprs.h>
-#include "version.h"
-#include "geteph.h"
-#include "rs92gps.h"
-#if FEATURE_MQTT
-#include "mqtt.h"
-#endif
 #include "esp_heap_caps.h"
+
+#include "src/SX1278FSK.h"
+#include "src/Sonde.h"
+#include "src/Display.h"
+#include "src/Scanner.h"
+#include "src/geteph.h"
+#include "src/rs92gps.h"
+#include "src/aprs.h"
+#if FEATURE_MQTT
+#include "src/mqtt.h"
+#endif
+
 //#define ESP_MEM_DEBUG 1
 #define DEVICE_GPS_LOG
-int e;
+// int e;
 
 enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB };
 static MainState mainState = ST_WIFISCAN; // ST_WIFISCAN;
@@ -468,7 +468,7 @@ void addSondeStatus(char *ptr, int i)
   sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg; temperature=%.1f&deg;C rH=%.1f&percnt; temprHsensor=%.1f&deg;C</td></tr>\n", s->lat, s->lon, s->alt, (s->hs / 1000 * 3600), s->vs, s->dir, s->temperature, s->relativeHumidity, s->tempRHSensor);
   const time_t t = s->time;
   ts = *gmtime(&t);
-  sprintf(ptr + strlen(ptr), "<tr><td>Frame# %d, Sats=%d, %04d-%02d-%02d %02d:%02d:%02d</td></tr>",
+  sprintf(ptr + strlen(ptr), "<tr><td>Frame# %u, Sats=%d, %04d-%02d-%02d %02d:%02d:%02d</td></tr>",
           s->frame, s->sats, ts.tm_year + 1900, ts.tm_mon + 1, ts.tm_mday, ts.tm_hour, ts.tm_min, ts.tm_sec);
   if (s->type == STYPE_RS41) {
     sprintf(ptr + strlen(ptr), "<tr><td>Burst-KT=%d Launch-KT=%d Countdown=%d (vor %ds) RSSI =-%d.%cdBm</td></tr>\n",
@@ -554,13 +554,6 @@ void setupConfigData() {
 }
 
 
-struct st_configitems {
-  const char *name;
-  const char *label;
-  int type;  // 0: numeric; i>0 string of length i; -1: separator; -2: type selector
-  void *data;
-};
-
 struct st_configitems config_list[] = {
   /* General config settings */
   {"", "Software configuration", -5, NULL},
@@ -592,7 +585,7 @@ struct st_configitems config_list[] = {
   {"", "Data feed configuration", -5, NULL},
   /* APRS settings */
   {"call", "Call", 8, sonde.config.call},
-  {"passcode", "Passcode", 8, sonde.config.passcode},
+  {"passcode", "Passcode", 0, &sonde.config.passcode},
   /* KISS tnc settings */
   {"kisstnc.active", "KISS TNC (port 14590) (needs reboot)", 0, &sonde.config.kisstnc.active},
   {"kisstnc.idformat", "KISS TNC ID Format", -2, &sonde.config.kisstnc.idformat},
@@ -662,7 +655,7 @@ struct st_configitems config_list[] = {
   {"sondehub.email", "SondeHub email (optional, only used to contact in case of upload errors)", 63, &sonde.config.sondehub.email},
 #endif
 };
-const static int N_CONFIG = (sizeof(config_list) / sizeof(struct st_configitems));
+const int N_CONFIG = (sizeof(config_list) / sizeof(struct st_configitems));
 
 void addConfigStringEntry(char *ptr, int idx, const char *label, int len, char *field) {
   sprintf(ptr + strlen(ptr), "<tr><td>%s</td><td><input name=\"CFG%d\" type=\"text\" value=\"%s\"/></td></tr>\n",
@@ -736,7 +729,7 @@ const char *createConfigForm() {
       case -6: // List of int8 values
         addConfigInt8List(ptr, i, config_list[i].label, (int8_t *)config_list[i].data);
         break;
-      case -3: // in/offt
+      case -3: // on/off
         addConfigOnOffEntry(ptr, i, config_list[i].label, (int *)config_list[i].data);
         break;
       case -2: // DFM format
@@ -2309,7 +2302,7 @@ void loopDecoder() {
 #endif
 
 #if FEATURE_MQTT
-    // send to MQTT if enabled
+    // send to MQTT if enabledson
     if (connected && mqttEnabled) {
       Serial.println("Sending sonde info via MQTT");
       mqttclient.publishPacket(s);
