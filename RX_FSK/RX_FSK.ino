@@ -160,6 +160,9 @@ String processor(const String& var) {
     snprintf(tmpstr, 128, "Fingerprint %d (%s)", sonde.fingerprint, fpstr);
     return String(tmpstr);
   }
+  if (var == "EPHSTATE") {
+    return String(ephtxt[ephstate]);
+  }
   return String();
 }
 
@@ -1089,12 +1092,10 @@ void addSondeStatusKML(char *ptr, int i)
     return;
   }
 
-
   sprintf(ptr + strlen(ptr), "<Placemark id=\"%s\"><name>%s</name><Point><altitudeMode>absolute</altitudeMode><coordinates>%.6f,%.6f,%.0f</coordinates></Point><description>%3.3f MHz, Type: %s, h=%.0fm</description></Placemark>",
-    s->id, s->id,
-    s->lon, s->lat, s->alt,
-    s->freq, sondeTypeStr[s->type], s->alt);
-
+          s->id, s->id,
+          s->lon, s->lat, s->alt,
+          s->freq, sondeTypeStr[s->type], s->alt);
 }
 
 const char *createKMLDynamic() {
@@ -2848,6 +2849,7 @@ void loopWifiScan() {
     }
     if (hasRS92) {
       geteph();
+      if(ephstate==EPH_PENDING) ephstate=EPH_ERROR;
       get_eph("/brdc");
     }
     delay(3000);
@@ -3130,7 +3132,7 @@ void sondehub_station_update(WiFiClient *client, struct st_sondehub *conf) {
   w += strlen(w);
 
   // Only send email if provided
-  if (conf->email != '\0') {
+  if (strlen(conf->email) != 0) {
     sprintf(w,
           "\"uploader_contact_email\": \"%s\",",
           conf->email);
@@ -3138,7 +3140,7 @@ void sondehub_station_update(WiFiClient *client, struct st_sondehub *conf) {
   }
 
   // Only send antenna if provided
-  if (conf->antenna != '\0') {
+  if (strlen(conf->antenna) != 0) {
     sprintf(w,
           "\"uploader_antenna\": \"%s\",",
           conf->antenna);
@@ -3348,15 +3350,15 @@ void sondehub_send_data(WiFiClient * client, SondeInfo * s, struct st_sondehub *
   // Only send temp & humidity if provided
   if (((int)s->temperature != 0) && ((int)s->relativeHumidity != 0)) {
     sprintf(w,
-            "\"temp\": %.1f,"
-            "\"humidity\": %.1f,",
+            "\"temp\": %.3f,"
+            "\"humidity\": %.3f,",
             float(s->temperature), float(s->relativeHumidity)
            );
     w += strlen(w);
   }
 
   // Only send antenna if provided
-  if (conf->antenna != '\0') {
+  if (strlen(conf->antenna) != 0) {
     sprintf(w,
           "\"uploader_antenna\": \"%s\",",
           conf->antenna);
