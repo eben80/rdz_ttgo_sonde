@@ -50,7 +50,7 @@ var greendot = '<span class="ldot gbg"></span>';
 $('#map .leaflet-control-container').append(L.DomUtil.create('div', 'leaflet-top leaflet-center leaflet-header'));
 var header = '';
 header += '<div id="sonde_main"><b>rdzTTGOSonde LiveMap</b><br />🎈 <b><span id="sonde_id"></span> - <span id="sonde_freq"></span> MHz - <span id="sonde_type"></span></b></div>';
-header += '<div id="sonde_detail"><span id="sonde_alt"></span>m | <span id="sonde_climb"></span>m/s | <span id="sonde_speed"></span>km/h</div>';
+header += '<div id="sonde_detail"><span id="sonde_alt"></span>m | <span id="sonde_climb"></span>m/s | <span id="sonde_speed"></span>km/h<br /><span id="sonde_time"></span> | <span id="sonde_rssi"></span>dBm</div>';
 header += '<div id="sonde_status"><span id="sonde_statbar"></span></div>';
 header += '<div id="settings"><br /><b>Prediction-Settings</b><br />';
 
@@ -70,7 +70,7 @@ $('.leaflet-footer').append(footer);
 
 var statbar = '';
 headtxt = function(data,stat) {
-  //console.log(data);
+  console.log(data);
   var staticon = (stat == '1')?greendot:yellowdot; 
   statbar = staticon + statbar;
   if ((statbar.length) > 10*greendot.length) { statbar = statbar.substring(0,10*greendot.length); }
@@ -80,10 +80,12 @@ headtxt = function(data,stat) {
     $('#sonde_alt').html(data.alt);
     $('#sonde_climb').html(data.climb);
     $('#sonde_speed').html( mr(data.speed * 3.6 * 10) / 10 );
+    $('#sonde_time').html(new Date(data.time * 1000).toISOString());
+    $('#sonde_rssi').html(data.rssi);
     $('#sonde_detail').show();
   } else {
     $('#sonde_id').html(data.launchsite.trim());
-    $('#sonde_detail').hide();
+    // $('#sonde_detail').hide();
   }
   $('#sonde_freq').html(data.freq);
   $('#sonde_type').html(data.type);
