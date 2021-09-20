@@ -3366,12 +3366,6 @@ void loop() {
   }
 #endif
 
-#if FEATURE_SONDEHUB
-  if (sonde.config.sondehub.active) {
-    // interval check moved to sondehub_station_update to avoid having to calculate distance in auto mode twice
-    sondehub_station_update(&shclient, &sonde.config.sondehub);
-  }
-#endif
 }
 
 #if FEATURE_SONDEHUB
@@ -3480,6 +3474,7 @@ void sondehub_station_update(WiFiClient *client, struct st_sondehub *conf) {
   Serial.println(strlen(data));
   Serial.println(data);
   Serial.println("Waiting for response");
+  // TODO: better do this asyncrhonously
   String response = client->readString();
   Serial.println(response);
   Serial.println("Response done...");
@@ -3538,7 +3533,6 @@ void sondehub_reply_handler(WiFiClient *client) {
       }
     }
   }
-
   // send import requests if needed
   if (sonde.config.sondehub.fiactive)  {
     if (shImport == 2) {
@@ -3554,6 +3548,13 @@ void sondehub_reply_handler(WiFiClient *client) {
       else
         sondehub_send_fimport(&shclient);
     }
+  }
+
+  // also handle periodic station updates here...
+  // interval check moved to sondehub_station_update to avoid having to calculate distance in auto mode twice
+  if(shState == SH_CONN_IDLE) {
+    // (do not set station update while a telemetry report is being sent
+    sondehub_station_update(&shclient, &sonde.config.sondehub);
   }
 }
 
