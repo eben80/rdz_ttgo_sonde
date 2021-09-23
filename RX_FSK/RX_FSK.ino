@@ -508,7 +508,7 @@ void addSondeStatus(char *ptr, int i)
   if (s->d.validID && (TYPE_IS_DFM(s->type) || TYPE_IS_METEO(s->type) || s->type == STYPE_MP3H) ) {
     sprintf(ptr + strlen(ptr), " (ser: %s)", s->d.ser);
   }
-  sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg; temperature=%.2f&deg;C rH=%.1f&percnt; temprHsensor=%.1f&deg;C pressure=%.1fhPa batteryVoltage=%.2fV</td></tr>\n", s->d.lat, s->d.lon, s->d.alt, (s->d.hs / 1000 * 3600), s->d.vs, s->d.dir, s->d.temperature, s->d.relativeHumidity, s->d.tempRHSensor, s->d.pressure, s->d.batteryVoltage);
+  sprintf(ptr + strlen(ptr), "</td></tr><tr><td>QTH: %.6f,%.6f h=%.0fm hs=%.0fkm/h vs=%.1fm/s heading=%.0f&deg; temperature=%.2f&deg;C rH=%.1f&percnt; temprHsensor=%.1f&deg;C pressure=%.2fhPa batteryVoltage=%.2fV</td></tr>\n", s->d.lat, s->d.lon, s->d.alt, (s->d.hs / 1000 * 3600), s->d.vs, s->d.dir, s->d.temperature, s->d.relativeHumidity, s->d.tempRHSensor, s->d.pressure, s->d.batteryVoltage);
   const time_t t = s->d.time;
   ts = *gmtime(&t);
   sprintf(ptr + strlen(ptr), "<tr><td>Frame# %u, Sats=%d, %04d-%02d-%02d %02d:%02d:%02d</td></tr>",
