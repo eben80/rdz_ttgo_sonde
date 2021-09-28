@@ -261,7 +261,7 @@ headtxt = function(data,stat) {
   storage = (typeof(Storage) !== "undefined")?true:false;
   
   settings_std = {
-    burst: 32500,
+    burst: 36000,
     overwrite_descend: 6,
     overwrite_descend_till: 12000
   };
