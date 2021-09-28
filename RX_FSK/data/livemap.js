@@ -262,7 +262,7 @@ headtxt = function(data,stat) {
   
   settings_std = {
     burst: 36000,
-    overwrite_descend: 6,
+    overwrite_descend: 27,
     overwrite_descend_till: 12000
   };
 
