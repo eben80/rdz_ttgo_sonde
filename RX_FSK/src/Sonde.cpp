@@ -43,7 +43,7 @@ const char *fingerprintText[]={
 /* global variables from RX_FSK.ino */
 int getKeyPressEvent(); 
 int handlePMUirq();
-extern bool pmu_irq;
+extern uint8_t pmu_irq;
 extern SX1278FSK sx1278;
 
 /* Task model:
@@ -247,14 +247,12 @@ void Sonde::defaultConfig() {
 	strcpy(config.udpfeed.symbol, "/O");
 	config.udpfeed.port = 9002;
 	config.udpfeed.highrate = 1;
-	config.udpfeed.idformat = ID_DFMGRAW;
 	config.tcpfeed.active = 0;
 	config.tcpfeed.type = 1;
 	strcpy(config.tcpfeed.host, "radiosondy.info");
 	strcpy(config.tcpfeed.symbol, "/O");
 	config.tcpfeed.port = 12345;
 	config.tcpfeed.highrate = 10;
-	config.tcpfeed.idformat = ID_DFMDXL;
 	config.kisstnc.active = 0;
 	strcpy(config.ephftp,"igs.bkg.bund.de/IGS/BRDC/");
 
@@ -542,10 +540,10 @@ uint16_t Sonde::waitRXcomplete() {
 	uint16_t res=0;
         uint32_t t0 = millis();
 rxloop:
-        while( !pmu_irq && rxtask.receiveResult==0xFFFF && millis()-t0 < 3000) { delay(50); }
+        while( (pmu_irq!=1) && rxtask.receiveResult==0xFFFF && millis()-t0 < 3000) { delay(50); }
 	if( pmu_irq ) {
 		handlePMUirq();
-		goto rxloop;
+		if(pmu_irq!=2) goto rxloop;
 	}
 	if( rxtask.receiveResult == RX_UPDATERSSI ) {
 		rxtask.receiveResult = 0xFFFF;
