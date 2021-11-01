@@ -60,7 +60,7 @@ screenfile=1
 # first entry: "Scanner" display
 # second entry: default "Receiver" display
 # additional entries: alternative receiver display, activated by button
-display=1,5,6,7,8
+display=0,3,4,5,6,7
 # set to -1 to disable (used for "N" values in timers in screens.txt). Value in seconds
 norx_timeout=60
 #-------------------------------#
