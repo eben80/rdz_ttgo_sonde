@@ -117,7 +117,7 @@ timeaction=#,5,+
 @Scanner
 timer=-1,0,0
 key1action=D,#,F,W
-key2action=>,#,0,#
+key2action=D,#,#,#
 timeaction=#,D,+
 0,0=XScan
 0,5=S#:
@@ -140,7 +140,7 @@ timeaction=#,D,+
 #
 @Legacy
 timer=-1,-1,N
-key1action=+,1,F,W 
+key1action=+,0,F,W
 key2action=>,#,#,#
 timeaction=#,#,0
 0,5=f MHz
@@ -160,7 +160,7 @@ timeaction=#,#,0
 # similar to @Legacy, but no norx timer, and Key2 goes to display 4
 @Field
 timer=-1,-1,N
-key1action=+,1,F,W 
+key1action=+,0,F,W
 key2action=>,#,#,#
 timeaction=#,#,#
 2,0=L
@@ -176,7 +176,7 @@ timeaction=#,#,#
 # similar to @Field
 @Field2
 timer=-1,-1,N
-key1action=+,1,F,W 
+key1action=+,0,F,W
 key2action=>,#,#,#
 timeaction=#,#,#
 2,0=L
@@ -193,10 +193,10 @@ timeaction=#,#,#
 # Configuration for "GPS" display
 # not yet the final version, just for testing
 @GPSDIST
-timer=-1,-1,30
-key1action=+,1,F,W 
+timer=-1,-1,-1
+key1action=+,0,F,W
 key2action=>,#,#,#
-timeaction=#,#,0
+timeaction=#,#,#
 0,0=Is
 0,9=f
 1,12=t
@@ -215,10 +215,10 @@ timeaction=#,#,0
 
 ############
 @BatteryOLED
-timer=-1,-1,30
-key1action=+,1,F,W 
+timer=-1,-1,-1
+key1action=+,0,F,W
 key2action=>,#,#,#
-timeaction=#,#,0
+timeaction=#,#,#
 fonts=1,1
 0,0=xBattery Status
 2,0=xVoltage:
@@ -236,10 +236,10 @@ fonts=3,3
 
 #############
 @Meteo
-timer=-1,-1,30
-key1action=+,1,F,W 
+timer=-1,-1,-1
+key1action=+,0,F,W
 key2action=>,#,#,#
-timeaction=#,#,0
+timeaction=#,#,#
 fonts=0,1
 0,0=Is
 0,9=f
@@ -254,10 +254,10 @@ fonts=0,1
 
 #############
 @GPS-Data
-timer=-1,-1,30
-key1action=+,1,F,W 
+timer=-1,-1,-1
+key1action=+,0,F,W
 key2action=>,#,#,#
-timeaction=#,#,0
+timeaction=#,#,#
 fonts=0,1
 0,0=xGPS-Data
 1,0=xLAT :
