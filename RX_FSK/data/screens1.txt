@@ -97,12 +97,6 @@
 # for TFT display, coordinates and width are multiplied by xscale,yscale and later used in pixels
 # with scale=1,1 you can directly use pixel coordinates.  (default: xscale=13,yscale=22 => 8 lines, 16 columns)
 
-###############
-@Off
-timer=-1,0,0
-key1action=D,#,F,W
-key2action=D,#,#,#
-timeaction=#,5,+
 
 ###########
 # 
