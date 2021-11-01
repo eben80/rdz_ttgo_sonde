@@ -28,9 +28,9 @@ led_pout=25
 #oled_rst=16
 #tft_rs=2
 #tft_cs=0
-rxlat=49.0523
-rxlon=21.2821
-rxalt=271
+rxlat=
+rxlon=
+rxalt=
 tft_orient=1
 #tft_modeflip=0
 gps_rxd=39
@@ -60,7 +60,7 @@ screenfile=1
 # first entry: "Scanner" display
 # second entry: default "Receiver" display
 # additional entries: alternative receiver display, activated by button
-display=0,1,5,6,7,8
+display=1,5,6,7,8
 # set to -1 to disable (used for "N" values in timers in screens.txt). Value in seconds
 norx_timeout=60
 #-------------------------------#
@@ -136,10 +136,10 @@ mqtt.prefix=rdz_sonde_server/
 #-------------------------------#
 # Sondehub v2 DB settings
 sondehub.active=1
-sondehub.chase=1
+sondehub.chase=3
 sondehub.host=api.v2.sondehub.org
-sondehub.callsign=EBSKI_RDZTTGO
-sondehub.antenna=403MHz Ground Plane Monopole
+sondehub.callsign=EBSKI
+sondehub.antenna=403MHz Rubber Ducky
 sondehub.email=sbmail246@gmail.com
 #-------------------------------#
 # Sondehub freq import settings
