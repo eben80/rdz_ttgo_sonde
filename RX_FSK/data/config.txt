@@ -146,7 +146,7 @@ sondehub.email=sbmail246@gmail.com
 #-------------------------------#
 sondehub.fiactive=1
 sondehub.fiinterval=5
-sondehub.fimaxdist=150
+sondehub.fimaxdist=170
 sondehub.fimaxage=2
 #-------------------------------#
 # EOF

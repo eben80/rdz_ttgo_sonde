@@ -1,8 +1,23 @@
+body {
+  --text-color: #000;
+  --bkg-color: #fff;
+}
+
+body.dark-theme {
+
+  background-color: #333;
+  color: white;
+}
 body, html {
 	height: 100%;
 	margin: 0;
 	font-family: Arial;
+	background: var(--bkg-color);
+	color: var(--text-color);
 }
+
+
+
 
 .active, .cfgheader:hover {
   background-color: #ccc;
@@ -156,7 +171,7 @@ p{
 .leaflet-gps{animation:fading 1s infinite}@keyframes fading{0%{opacity:0.7}50%{opacity:1}100%{opacity:0.7}}
 
 .leaflet-gps::after {
-	content: '🔵';
+	content: 'ðŸ”µ';
 }
 .leaflet-gps {
 	margin-left: -7px !important;
@@ -164,7 +179,7 @@ p{
 }
 
 .leaflet-burst::after {
-	content: '💥';
+	content: 'ðŸ’¥';
 }
 .leaflet-burst {
 	margin-left: -20px !important;
@@ -174,7 +189,7 @@ p{
 }
 
 .leaflet-landing::after {
-	content: '×';
+	content: 'Ã—';
 }
 
 .leaflet-landing {
@@ -337,12 +352,27 @@ p{
   }
 }
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #333;
-  }   
-  h2{
-    color: white;
+    body {
+    --text-color: #fff;
+    --bkg-color: #333;
+    --leaf-bkg: grey;
+    --leaf-txt: white;
   }
+
+
+  .light-theme {
+    --bkg-color: #fff;
+    --text-color: #000;
+    --leaf-bkg: #fff;
+    --leaf-txt:  #000;
+
+  }
+
+  body {
+	background: var(--bkg-color);
+	color: var(--text-color);
+  }
+
   table, th, td, .save, a.active {
     color: white;
     border: 1px solid grey;
@@ -367,14 +397,14 @@ p{
     background-color: grey;
   }
   .leaflet-center {
-    color: white;
-    background-color: grey;
+    color: var(--leaf-txt);
+    background-color: var(--leaf-bkg);
   }
   .leaflet-bar a {
-    background-color: grey !important;
+    background-color: var(--leaf-bkg) !important;
   }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip {
     color: white !important;
-    background: grey !important;
+    background: var(--leaf-bkg) !important;
   }
 }
