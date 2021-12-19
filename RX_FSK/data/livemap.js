@@ -16,19 +16,11 @@ $(document).ready(function(){
   
   const currentTheme = localStorage.getItem("theme");
 
-																					   
-																						 
-																																									   
-				 
-				 
-	   
-		  
   var osmlight = L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
     attribution: '<div><a href="https://leafletjs.com/">Leaflet</a> &middot; Map: <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></div>',
     minZoom: 1,
     maxZoom: 19
   });
-   
 
   var osmdark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -44,28 +36,38 @@ $(document).ready(function(){
   var basemap;
   if (currentTheme == 'dark') {
     basemap = osmdark;
+    // document.body.classList.toggle("is-dark");
 
   } else {
     basemap = osmlight;
-    document.body.classList.toggle("light-theme");
+    // document.body.classList.remove("is-dark");
   }
 
 
   basemap.addTo(map);
 
   basemap_change = function () {
+    console.log("Current map:", basemap);
     if (basemap == 'osmlight') {
       map.removeLayer(osmlight);
       map.addLayer(osmdark);
+      document.getElementsByClassName("leaflet-top leaflet-left").className = "leaflet-top leaflet-left is-dark";
+      // document.getElementById("sonde_main").classList.toggle("is-dark")
       basemap = 'osmdark';
+      console.log("Selected map:", basemap);
     } else if (basemap == 'osmdark') {
       map.removeLayer(osmlight);
       map.addLayer(esri);
+      document.getElementsByClassName("leaflet-top leaflet-left is-dark").className = "leaflet-top leaflet-left";
+      // document.getElementById("sonde_main").classList.remove("is-dark");
       basemap = 'esri';
+      console.log("Selected map:", basemap);
     } else {
       map.removeLayer(esri);
       map.addLayer(osmlight);
+      // document.getElementById("sonde_main").classList.remove("is-dark");
       basemap = 'osmlight';
+      console.log("Selected map:", basemap);
     }
   };
 
@@ -210,11 +212,6 @@ map.addControl(new L.Control.Button([ { position:'topright', text: '⚙️', hre
               keepAtCenter: (follow=='marker')?true:false
           })
           .setPopupContent(poptxt('position',data));
-										
-							 
-					  
-							  
-		   
         }
         if (!dots[data.id]) { dots[data.id] = []; }
         dots[data.id].push(location);

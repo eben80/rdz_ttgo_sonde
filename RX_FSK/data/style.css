@@ -1,26 +1,63 @@
-body {
-  --text-color: #000;
-  --bkg-color: #fff;
+:root {
+  --primary-color: #302AE6;
+  --secondary-color: #536390;
+  --font-color: #000;
+  --bg-color: #fff;
+  --heading-color: #0F3376;
+  --tbl-bg-color: #ddd;
+  --tbl-bor-color: #000;
+  --tbl-thtd-bg-color: #ddd;
+  --tbl-thtd-bor-color: #000;
+  --tbl-tdcap-bg-color: #aaa;
+  --tbl-tdsfreq-bg-color: #aaa;
+  --btn2-bg-color: #f44336;
+  --btn-save-bg-color: #0F3376;
+  --btn-save-bor-color: #000;
+  --btn-save-color: #fff;
+  --btn-ctl-bg-color: #ccc;
+  --btn-ctl-bor-color: #000;
+  --btn-ctl-color: #000;
+  --act-hover: #ccc;
+
+
 }
 
-body.dark-theme {
-
-  background-color: #333;
-  color: white;
+[data-theme="dark"] {
+  --primary-color: #fff;
+  --secondary-color: #818cab;
+  --font-color: #e1e1ff;
+  --bg-color: #333;
+  --heading-color: #818cab;
+  --tbl-bg-color: #ddd;
+  --tbl-bor-color: #000;
+  --tbl-thtd-bg-color: #ddd;
+  --tbl-thtd-bor-color: #000;
+  --tbl-tdcap-bg-color: #aaa;
+  --tbl-tdsfreq-bg-color: #aaa;
+  --btn2-bg-color: #f44336;
+  --btn-save-bg-color: #0F3376;
+  --btn-save-bor-color: #000;
+  --btn-save-color: #fff;
+  --btn-ctl-bg-color: #ccc;
+  --btn-ctl-bor-color: #000;
+  --btn-ctl-color: #000;
+  --act-hover: #ccc;
 }
+
+.is-dark {
+  filter: invert(80%);
+}
+
 body, html {
 	height: 100%;
 	margin: 0;
 	font-family: Arial;
-	background: var(--bkg-color);
-	color: var(--text-color);
+	background: var(--bg-color);
+	color: var(--font-color);
 }
 
-
-
-
 .active, .cfgheader:hover {
-  background-color: #ccc;
+  background-color: var(--act-hover);
 }
 .cfgpanel {
 }
@@ -61,19 +98,19 @@ th.cfg {
 }
 
 table, th, td {
-	border: 1px solid black;
+	border: 1px solid var(--tbl-bor-color);
 	border-collapse: collapse;
-	background-color: #ddd
+	background-color: var(--tbl-thtd-bg-color)
 }
 
 td#caption {
 	text-align: center;
-	background-color: #aaa;
+	background-color: var(--tbl-tdcap-bg-color);
 	font-weight: bold;
 }
 
 td#sfreq {
-	background-color: #ccc;
+	background-color: var(--tbl-tdsfreq-bg-color);
 }
 
 .content {
@@ -99,7 +136,7 @@ html {
   text-align: center;
 }
 h1{
-  color: #0F3376;
+  color: var(--heading-color);
   font-size: 24px
 }
 p{
@@ -118,13 +155,13 @@ p{
   cursor: pointer;
 }
 .button2 {
-  background-color: #f44336;
+  background-color: var(--btn2-bg-color);
 }
 .save {
-  background-color: #0F3376;
-  border: black;
+  background-color: var(--btn-save-bg-color);
+  border: var(--btn-save-bor-color);
   border-width: 1;
-  color: white;
+  color: var(--btn-save-color);
   padding: 8px 30px;
   text-align: center;
   text-decoration: none;
@@ -133,10 +170,10 @@ p{
   margin: 0
 }
 .ctlbtn {
-  background-color: #ccc;
-  border: black;
+  background-color: var(--btn-ctl-bg-color);
+  border: var(--btn-ctl-bor-color);
   border-width: 1;
-  color: black;
+  color: var(--btn-ctl-color);
   padding: 4px 30px;
   text-align: center;
   text-decoration: none;
@@ -349,62 +386,5 @@ p{
     float: none;
     display: block;
     text-align: left;
-  }
-}
-@media (prefers-color-scheme: dark) {
-    body {
-    --text-color: #fff;
-    --bkg-color: #333;
-    --leaf-bkg: grey;
-    --leaf-txt: white;
-  }
-
-
-  .light-theme {
-    --bkg-color: #fff;
-    --text-color: #000;
-    --leaf-bkg: #fff;
-    --leaf-txt:  #000;
-
-  }
-
-  body {
-	background: var(--bkg-color);
-	color: var(--text-color);
-  }
-
-  table, th, td, .save, a.active {
-    color: white;
-    border: 1px solid grey;
-    border-collapse: collapse;
-    background-color: #333;
-  }
-  input, select, .tci, .warning {
-    color: white;
-    background-color: #333;
-  }
-  a:link, a:visited {
-    color: #D3D3D3;
-  }
-  .topnav, td#sfreq {
-    background-color: grey;
-  }
-  .topnav a:visited {
-    color: white;
-  }
-  .ctlbtn {
-    color: white;
-    background-color: grey;
-  }
-  .leaflet-center {
-    color: var(--leaf-txt);
-    background-color: var(--leaf-bkg);
-  }
-  .leaflet-bar a {
-    background-color: var(--leaf-bkg) !important;
-  }
-  .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-    color: white !important;
-    background: var(--leaf-bkg) !important;
   }
 }
