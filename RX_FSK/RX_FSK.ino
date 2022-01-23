@@ -23,6 +23,7 @@
 #include "src/aprs.h"
 #include "src/ShFreqImport.h"
 #include "src/RS41.h"
+#include "src/Tone32.hpp" 
 #if FEATURE_CHASEMAPPER
 #include "src/Chasemapper.h"
 #endif
@@ -64,6 +65,20 @@ const int   daylightOffset_sec = 0; //UTC
 boolean connected = false;
 WiFiUDP udp;
 WiFiClient client;
+
+//Tonelocate start
+const int TONE_OUTPUT_PIN = 13;
+const int TONE_PWM_CHANNEL = 0;
+
+Tone32 _tone32(TONE_OUTPUT_PIN, TONE_PWM_CHANNEL);
+const int PLAY_NOTE_DURATION_MS = 200;
+int TONE_GAP_DURATION = 2000;
+int TONE_FREQ = 100;
+int RSSI = 15;     // Assumes abs value of around min 15 max 120
+int HEADING = 180; // 0 to 359
+unsigned long time_1 = 0;
+String a;
+//Tonelocate end
 
 /* Sonde.h: enum SondeType { STYPE_DFM,, STYPE_RS41, STYPE_RS92, STYPE_M10M20, STYPE_M10, STYPE_M20, STYPE_MP3H }; */
 const char *sondeTypeStrSH[NSondeTypes] = { "DFM", "RS41", "RS92", "Mxx"/*never sent*/, "M10", "M20", "MRZ" };
@@ -2489,6 +2504,7 @@ void loopDecoder() {
       rdzclient.stop();
     }
     //Serial.println("Writing rdzclient OK");
+      toneLocate(dir,s->rssi);
   }
   Serial.print("MAIN: updateDisplay started\n");
   if (forceReloadScreenConfig) {
@@ -3198,6 +3214,38 @@ int fetchHTTPheader(int *validType) {
   return contentLength;
 }
 
+void toneLocate(float head, int sig)
+{
+  Serial.print("head=");
+  Serial.println(head);
+  Serial.print("sig=");
+  Serial.println(sig);
+  if (_tone32.isPlaying())
+  {
+  }
+  else
+  {
+    if (millis() >= time_1 + TONE_GAP_DURATION)
+    {
+      time_1 += TONE_GAP_DURATION;
+      TONE_GAP_DURATION = 200 + sig / 0.1;
+      if (round(head) == 0)
+      {
+        TONE_FREQ = 9200;
+      }
+      else if (round(head) <= 180)
+      {
+        TONE_FREQ = (9000 / round(head));
+      }
+      else
+      {
+        TONE_FREQ = (9000 / (360 - round(head)));
+      }
+      _tone32.playTone(TONE_FREQ, PLAY_NOTE_DURATION_MS);
+    }
+  }
+}
+
 
 
 void loop() {
@@ -3241,6 +3289,7 @@ void loop() {
   }
 #endif
 
+  _tone32.update();
 }
 
 void aprs_station_update() {
