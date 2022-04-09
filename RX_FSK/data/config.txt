@@ -33,7 +33,7 @@ rxlon=21.2821
 rxalt=271
 tft_orient=1
 #tft_modeflip=0
-gps_rxd=39
+gps_rxd=-1
 gps_txd=-1
 
 # Show AFC value (for RS41 and M10/M20, maybe also DFM, but not useful for RS92)
