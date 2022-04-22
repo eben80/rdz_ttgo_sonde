@@ -28,9 +28,9 @@ led_pout=25
 #oled_rst=16
 #tft_rs=2
 #tft_cs=0
-rxlat=49.0523
-rxlon=21.2821
-rxalt=271
+rxlat=
+rxlon=
+rxalt=
 tft_orient=1
 #tft_modeflip=0
 gps_rxd=-1
@@ -139,10 +139,10 @@ mqtt.prefix=rdz_sonde_server/
 #-------------------------------#
 # Sondehub v2 DB settings
 sondehub.active=1
-sondehub.chase=1
+sondehub.chase=3
 sondehub.host=api.v2.sondehub.org
-sondehub.callsign=EBSKI_RDZTTGO
-sondehub.antenna=403MHz Ground Plane Monopole
+sondehub.callsign=EBSKI
+sondehub.antenna=403MHz Rubber Ducky
 sondehub.email=sbmail246@gmail.com
 #-------------------------------#
 # Sondehub freq import settings
