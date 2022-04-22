@@ -4,6 +4,7 @@
 #include <AsyncMqttClient.h>
 #include <ESPmDNS.h>
 #include "RS41.h"
+#include "json.h"
 
 TimerHandle_t mqttReconnectTimer;
 
@@ -30,6 +31,7 @@ void MQTT::init(const char* host, uint16_t port, const char* id, const char *use
     mqttClient.setServer(ip, port);
     snprintf(buffer, 20, "%s%04d", id, (int)random(0, 1000));
     buffer[20] = 0;
+    Serial.print(buffer);
     mqttClient.setClientId(buffer);
     if (strlen(password) > 0) {
         mqttClient.setCredentials(username, password);
@@ -46,8 +48,12 @@ void MQTT::publishUptime()
     mqttClient.connect(); // ensure we've got connection
 
     Serial.println("[MQTT] writing");
-    char payload[12];
-    snprintf(payload, 12, "%lu", millis());
+    //char payload[128];
+    //snprintf(payload, 12, "%lu", millis());
+    //snprintf(payload, 124, "{\"uptime\": %lu," "\"user\": \"%s\"", millis(),         username );
+    char payload[128];
+    snprintf(payload, 128, "{\"uptime\": %d, \"user\": \"%s\", \"rxlat\": %.5f, \"rxlon\": %.5f}", millis(), username, sonde.config.rxlat, sonde.config.rxlon ); 
+    Serial.println(payload);
     char topic[128];
     snprintf(topic, 128, "%s%s", this->prefix, "uptime");
     mqttClient.publish(topic, 1, 1, payload);
@@ -59,6 +65,14 @@ void MQTT::publishPacket(SondeInfo *si)
     mqttClient.connect(); // ensure we've got connection
 
     char payload[1024];
+    payload[0] = '{';
+    int n = sonde2json(payload+1, 1023, si);
+    if(n<0) {
+	// ERROR
+        Serial.println("publishPacket: sonde2json failed, string too long");
+    }
+
+#if 0
     snprintf(payload, 1024, "{"
         "\"active\": %d,"
         "\"freq\": %.2f,"
@@ -134,8 +148,11 @@ void MQTT::publishPacket(SondeInfo *si)
         snprintf(payload, 1024, "%s%s%s%s", payload, ",\"subtype\": \"", subtype, "\"" );
     }
     snprintf(payload, 1024, "%s%s", payload, "}" ); // terminate payload string
+#endif
+    strcat(payload, "}");   // terminate payload string
 
     char topic[128];
-    snprintf(topic, 128, "%s%s", this->prefix, "packet");
+    snprintf(topic, 128, "%s%s", this->prefix, "data");
+    Serial.print(payload);
     mqttClient.publish(topic, 1, 1, payload);
 }

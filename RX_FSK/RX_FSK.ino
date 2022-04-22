@@ -24,6 +24,7 @@
 #include "src/ShFreqImport.h"
 #include "src/RS41.h"
 #include "src/Tone32.hpp" 
+#include "src/json.h"
 #if FEATURE_CHASEMAPPER
 #include "src/Chasemapper.h"
 #endif
@@ -567,9 +568,12 @@ const char *createStatusForm() {
 
 const char *createLiveJson() {
   char *ptr = message;
-  strcpy(ptr, "{");
-
   SondeInfo *s = &sonde.sondeList[sonde.currentSonde];
+
+  strcpy(ptr, "{\"sonde\": {");
+  // use the same JSON format here as for MQTT and for the Android App
+  sonde2json( ptr+strlen(ptr), 1024, s );
+#if 0
   sprintf(ptr + strlen(ptr), "\"sonde\": {\"rssi\": %d, \"vframe\": %d, \"time\": %d,\"id\": \"%s\", \"freq\": %3.3f, \"type\": \"%s\"",
           s->rssi, s->d.vframe, s->d.time, s->d.id, s->freq, sondeTypeStr[sonde.realType(s)]);
 
@@ -585,7 +589,8 @@ const char *createLiveJson() {
     sprintf(ptr + strlen(ptr), ", \"speed\": %.1f", s->d.hs);
 
   sprintf(ptr + strlen(ptr), ", \"launchsite\": \"%s\", \"res\": %d }", s->launchsite, s->rxStat[0]);
-
+#endif
+  strcat(ptr, " }");
   if (gpsPos.valid) {
     sprintf(ptr + strlen(ptr), ", \"gps\": {\"lat\": %g, \"lon\": %g, \"alt\": %d, \"sat\": %d, \"speed\": %g, \"dir\": %d, \"hdop\": %d }", gpsPos.lat, gpsPos.lon, gpsPos.alt, gpsPos.sat, gpsPos.speed, gpsPos.course, gpsPos.hdop);
     //}
@@ -595,7 +600,6 @@ const char *createLiveJson() {
       int alt = isnan(sonde.config.rxalt) ? 0 : (int)sonde.config.rxalt;
       sprintf(ptr + strlen(ptr), ", \"gps\": {\"lat\": %g, \"lon\": %g, \"alt\": %d, \"sat\": 0, \"speed\": 0, \"dir\": 0, \"hdop\": 0 }", sonde.config.rxlat, sonde.config.rxlon, alt);
     }
-
   }
 
   strcat(ptr, "}");
@@ -631,6 +635,7 @@ struct st_configitems config_list[] = {
   {"rxalt", -7, &sonde.config.rxalt},
   {"screenfile", 0, &sonde.config.screenfile},
   {"display", -6, sonde.config.display},
+  {"dispsaver", 0, &sonde.config.dispsaver},
   /* Spectrum display settings */
   {"spectrum", 0, &sonde.config.spectrum},
   {"startfreq", 0, &sonde.config.startfreq},
@@ -2432,6 +2437,21 @@ void loopDecoder() {
     } else {
       *gps = 0;
     }
+    //
+    raw[0] = '{';
+    // Use same JSON format as for MQTT and HTML map........
+    sonde2json(raw+1, 1023, s);
+    sprintf(raw+strlen(raw),
+	",\"active\":%d"
+	",\"validId\":%d"
+	",\"validPos\":%d"
+	" %s}\n",
+	(int)s->active,
+	s->d.validID,
+	s->d.validPos,
+	gps);
+    int len = strlen(raw);
+#if 0
     //maintain backwords compatibility
     float lat = isnan(s->d.lat) ? 0 : s->d.lat;
     float lon = isnan(s->d.lon) ? 0 : s->d.lon;
@@ -2440,7 +2460,6 @@ void loopDecoder() {
     float hs = isnan(s->d.hs) ? 0 : s->d.hs;
     float dir = isnan(s->d.dir) ? 0 : s->d.dir;
 
-    //
     int len = snprintf(raw, 1024, "{"
                        "\"res\": %d,"
                        "\"type\": \"%s\","
@@ -2496,6 +2515,8 @@ void loopDecoder() {
                        s->d.crefKT,
                        gps
                       );
+#endif
+
     //Serial.println("Writing rdzclient...");
     if (len > 1024) len = 1024;
     int wlen = rdzclient.write(raw, len);
@@ -2507,6 +2528,7 @@ void loopDecoder() {
       toneLocate(dir,s->rssi);
   }
   Serial.print("MAIN: updateDisplay started\n");
+  sonde.dispsavectlOFF( (res & 0xff) == 0 );  // handle screen saver (disp auto off)
   if (forceReloadScreenConfig) {
     disp.initFromFile(sonde.config.screenfile);
     sonde.clearDisplay();
