@@ -14,12 +14,9 @@ $(document).ready(function(){
   L.control.scale().addTo(map);
   L.control.attribution({prefix:false}).addTo(map);
   
-  const currentTheme = localStorage.getItem("theme");
-
-  var osmlight = L.tileLayer('https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', {
-    attribution: '<div><a href="https://leafletjs.com/">Leaflet</a> &middot; Map: <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></div>',
-    minZoom: 1,
-    maxZoom: 19
+  var osmlight = L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+  	maxZoom: 18,
+  	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   });
 
   var osmdark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
@@ -27,43 +24,43 @@ $(document).ready(function(){
     minZoom: 1,
     maxZoom: 19
   });
+  
+  var opentopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  	maxZoom: 17,
+  	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a><br />Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+  });
 
   var esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '<div><a href="https://leafletjs.com/">Leaflet</a> &middot; Map: <a href="https://www.esri.com/">Esri</a> &middot; Earthstar Geographics</div>',
-    minZoom: 1,
-    maxZoom: 20
+  	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye,<br />Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
   });
+  
   var basemap;
-  if (currentTheme == 'dark') {
-    basemap = osmdark;
-    // document.body.classList.toggle("is-dark");
-
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    map.addLayer(osmdark);
+    basemap='osmdark';
   } else {
-    basemap = osmlight;
-    // document.body.classList.remove("is-dark");
+    map.addLayer(osmlight);
+    basemap='osmlight';
   }
-
-
-  basemap.addTo(map);
-
+  
   basemap_change = function () {
     console.log("Current map:", basemap);
     if (basemap == 'osmlight') {
       map.removeLayer(osmlight);
-      map.addLayer(osmdark);
-      document.getElementsByClassName("leaflet-top leaflet-left").className = "leaflet-top leaflet-left is-dark";
-      // document.getElementById("sonde_main").classList.toggle("is-dark")
-      basemap = 'osmdark';
-      console.log("Selected map:", basemap);
-    } else if (basemap == 'osmdark') {
-      map.removeLayer(osmlight);
+      map.addLayer(opentopo);
+      basemap = 'opentopo';
+    } else if (basemap == 'opentopo') {
+      map.removeLayer(opentopo);
       map.addLayer(esri);
       document.getElementsByClassName("leaflet-top leaflet-left is-dark").className = "leaflet-top leaflet-left";
       // document.getElementById("sonde_main").classList.remove("is-dark");
       basemap = 'esri';
-      console.log("Selected map:", basemap);
-    } else {
+    } else if (basemap == 'esri') {
       map.removeLayer(esri);
+      map.addLayer(osmdark);
+      basemap = 'osmdark';
+    } else {
+      map.removeLayer(osmdark);
       map.addLayer(osmlight);
       // document.getElementById("sonde_main").classList.remove("is-dark");
       basemap = 'osmlight';
@@ -450,7 +447,7 @@ map.addControl(new L.Control.Button([ { position:'topright', text: '⚙️', hre
 
     var add =
     '<br /><b>Position:</b> '+lat+',  '+lon+'<br />'+
-    '<b>Open:</b> <a href="https://www.google.de/maps/?q='+lat+', '+lon+'" target="_blank">GMaps</a> | <a href="https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'&zoom=15" target="_blank">OSM</a> | <a href="mapsme://map?ll='+lat+','+lon+'">Maps.me</a>';
+    '<b>Open:</b> <a href="https://www.google.de/maps/?q='+lat+', '+lon+'" target="_blank">GMaps</a> | <a href="https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'&zoom=15" target="_blank">OSM</a> | <a href="geo://'+lat+','+lon+'">GeoApp</a>';
 
     if (t == 'position') { return '<div class="i_position"><b>🎈 '+i.id+'</b>'+add+'</div>'; }
     if (t == 'burst') { return '<div class="i_burst"><b>💥 Predicted Burst:</b><br />'+fd(i.datetime)+' in '+mr(i.altitude)+'m'+add+'</div>'; }
