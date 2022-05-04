@@ -28,9 +28,9 @@ led_pout=25
 #oled_rst=16
 #tft_rs=2
 #tft_cs=0
-rxlat=
-rxlon=
-rxalt=
+rxlat=49.0522442
+rxlon=21.2820014
+rxalt=258
 tft_orient=1
 #tft_modeflip=0
 gps_rxd=-1
@@ -62,9 +62,9 @@ screenfile=1
 # additional entries: alternative receiver display, activated by button
 display=0,1,2,3,4
 # turn off display: 0=never, 1=always, 2=if no RX; (+n*10: after n seconds)
-dispsaver=0
+dispsaver=2
 # set OLED contrast (0..255) or leave at factory default (-1)
-dispcontrast=-1
+dispcontrast=1
 # set to -1 to disable (used for "N" values in timers in screens.txt). Value in seconds
 norx_timeout=60
 #-------------------------------#
