@@ -15,13 +15,12 @@ $(document).ready(function(){
   L.control.attribution({prefix:false}).addTo(map);
   
   var osmlight = L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
-  	maxZoom: 18,
+  	maxZoom: 19,
   	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   });
 
   var osmdark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    minZoom: 1,
     maxZoom: 19
   });
   
@@ -31,7 +30,8 @@ $(document).ready(function(){
   });
 
   var esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye,<br />Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye,<br />Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    maxZoom: 21
   });
   
   var basemap;
@@ -99,7 +99,6 @@ $('.leaflet-footer').append(footer);
 
 var statbar = '';
 headtxt = function(data,stat) {
-  //console.log(data);
   var staticon = (stat == '1')?greendot:yellowdot; 
   statbar = staticon + statbar;
   if ((statbar.length) > 10*greendot.length) { statbar = statbar.substring(0,10*greendot.length); }
@@ -192,7 +191,6 @@ map.addControl(new L.Control.Button([ { position:'topright', text: '⚙️', hre
 
   draw = function(data) {
     var stat;
-    console.log(data);
     if (data.id) {
       last_id = data.id;
       // data.res: 0: ok  1: no rx (timeout), 2: crc err, >2 some other error
@@ -223,8 +221,7 @@ map.addControl(new L.Control.Button([ { position:'topright', text: '⚙️', hre
         storage_write(data);
         $('#status').html(greendot);
         stat = 1;
-      }
-      else {
+      } else {
         $('#status').html(yellowdot);
         stat = 0;
       }
@@ -276,7 +273,6 @@ map.addControl(new L.Control.Button([ { position:'topright', text: '⚙️', hre
       $('#status').html(reddot);
       $.ajax({url: 'live.json', success: (function( data ) {
         if (typeof data != "object") { data = $.parseJSON(data); }
-        //console.log(data);
         if (data.sonde) {
           draw(data.sonde);
         } else {
