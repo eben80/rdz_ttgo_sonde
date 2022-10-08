@@ -109,7 +109,7 @@ extern float calcLatLonDist(float lat1, float lon1, float lat2, float lon2);
 // KISS over TCP for communicating with APRSdroid
 WiFiServer tncserver(14580);
 WiFiClient tncclient;
-// JSON over TCP for communicating with my kotlin andoird test stuff
+// JSON over TCP for communicating with the rdzSonde (rdzwx-go) Android app
 WiFiServer rdzserver(14570);
 WiFiClient rdzclient;
 // APRS over TCP for radiosondy.info etc
@@ -243,7 +243,7 @@ const String sondeTypeSelect(int activeType) {
 //trying to work around
 //"assertion "heap != NULL && "free() target pointer is outside heap areas"" failed:"
 // which happens if request->send is called in createQRGForm!?!??
-char message[10240 * 4]; //needs to be large enough for all forms (not checked in code)
+char message[10240 * 4-2048]; //needs to be large enough for all forms (not checked in code)
 // QRG form is currently about 24kb with 100 entries
 
 ///////////////////////// Functions for Reading / Writing QRG list from/to qrg.txt
@@ -309,7 +309,10 @@ void HTMLBODYEND(char *ptr) {
   strcat(ptr, "</div></form></body></html>");
 }
 void HTMLSAVEBUTTON(char *ptr) {
-  strcat(ptr, "</div><div class=\"footer\"><input type=\"submit\" class=\"save\" value=\"Save changes\"/>");
+  strcat(ptr, "</div><div class=\"footer\"><input type=\"submit\" class=\"save\" value=\"Save changes\"/>"
+	      "<span class=\"ttgoinfo\">rdzTTGOserver ");
+  strcat(ptr, version_id);
+  strcat(ptr, "</span>");
 }
 
 const char *createQRGForm() {
@@ -420,7 +423,8 @@ void setupWifiList() {
 const char *createWIFIForm() {
   char *ptr = message;
   char tmp[4];
-  strcpy(ptr, HTMLHEAD); strcat(ptr, "</head>");
+  strcpy(ptr, HTMLHEAD);
+  strcat(ptr, "<script src=\"rdz.js\"></script></head>");
   HTMLBODY(ptr, "wifi.html");
   strcat(ptr, "<table><tr><th>Nr</th><th>SSID</th><th>Password</th></tr>");
   for (int i = 0; i < MAX_WIFI; i++) {
@@ -431,7 +435,7 @@ const char *createWIFIForm() {
             i + 1, i < nNetworks ? networks[i].id.c_str() : "",
             i + 1, i < nNetworks ? networks[i].pw.c_str() : "");
   }
-  strcat(ptr, "</table>");
+  strcat(ptr, "</table><script>footer()</script>");
   //</div><div class=\"footer\"><input type=\"submit\" class=\"update\" value=\"Update\"/>");
   HTMLSAVEBUTTON(ptr);
   HTMLBODYEND(ptr);
@@ -439,6 +443,8 @@ const char *createWIFIForm() {
   return message;
 }
 
+#if 0
+  // moved to map.html (active warning is still TODO 
 const char *createSondeHubMap() {
   SondeInfo *s = &sonde.sondeList[0];
   char *ptr = message;
@@ -461,6 +467,7 @@ const char *createSondeHubMap() {
   HTMLBODYEND(ptr);
   return message;
 }
+#endif
 
 const char *handleWIFIPost(AsyncWebServerRequest *request) {
   char label[10];
@@ -505,7 +512,7 @@ void addSondeStatus(char *ptr, int i)
 {
   struct tm ts;
   SondeInfo *s = &sonde.sondeList[i];
-  strcat(ptr, "<table>");
+  strcat(ptr, "<table class=\"stat\">");
   sprintf(ptr + strlen(ptr), "<tr><td id=\"sfreq\">%3.3f MHz, Type: %s</td><tr><td>ID: %s", s->freq, sondeTypeLongStr[sonde.realType(s)],
           s->d.validID ? s->d.id : "<?""?>");
   if (s->d.validID && (TYPE_IS_DFM(s->type) || TYPE_IS_METEO(s->type) || s->type == STYPE_MP3H) ) {
@@ -532,13 +539,15 @@ void addSondeStatus(char *ptr, int i)
   sprintf(ptr + strlen(ptr), "<a target=\"_empty\" href=\"https://www.openstreetmap.org/?mlat=%.6f&mlon=%.6f&zoom=14\">OSM</a> - ", s->d.lat, s->d.lon);
   sprintf(ptr + strlen(ptr), "<a target=\"_empty\" href=\"https://www.google.com/maps/search/?api=1&query=%.6f,%.6f\">Google</a></td></tr>", s->d.lat, s->d.lon);
 
-  strcat(ptr, "</table><p/>\n");
+  strcat(ptr, "</table>\n");
 }
 
 const char *createStatusForm() {
   char *ptr = message;
   strcpy(ptr, HTMLHEAD);
-  strcat(ptr, "<meta http-equiv=\"refresh\" content=\"5\"></head><body>");
+  strcat(ptr, "<meta http-equiv=\"refresh\" content=\"5\"></head>");
+  HTMLBODY(ptr, "status.html");
+  strcat(ptr, "<div class=\"content\">");
 
   for (int i = 0; i < sonde.config.maxsonde; i++) {
     int snum = (i + sonde.currentSonde) % sonde.config.maxsonde;
@@ -546,7 +555,12 @@ const char *createStatusForm() {
       addSondeStatus(ptr, snum);
     }
   }
-  strcat(ptr, "</body></html>");
+  strcat(ptr, "</div><div class=\"footer\"><span></span>"
+              "<span class=\"ttgoinfo\">rdzTTGOserver ");
+  strcat(ptr, version_id);
+  strcat(ptr, "</span>");
+
+  HTMLBODYEND(ptr);
   Serial.printf("Status form: size=%d bytes\n", strlen(message));
   return message;
 }
@@ -723,7 +737,8 @@ const int N_CONFIG = (sizeof(config_list) / sizeof(struct st_configitems));
 
 const char *createConfigForm() {
   char *ptr = message;
-  strcpy(ptr, HTMLHEAD); strcat(ptr, "</head>");
+  strcpy(ptr, HTMLHEAD);
+  strcat(ptr, "<script src=\"rdz.js\"></script></head>");
   HTMLBODY(ptr, "config.html");
   strcat(ptr, "<div id=\"cfgtab\"></div>");
   strcat(ptr, "<script src=\"cfg.js\"></script>");
@@ -767,6 +782,7 @@ const char *createConfigForm() {
     strcat(ptr, "\");\n");
   }
   strcat(ptr, "configTable();\n </script>");
+  strcat(ptr, "<script>footer()</script>");
   HTMLSAVEBUTTON(ptr);
   HTMLBODYEND(ptr);
   Serial.printf("Config form: size=%d bytes\n", strlen(message));
@@ -834,7 +850,8 @@ const char *ctrllabel[] = {"Receiver/next freq. (short keypress)", "Scanner (dou
 
 const char *createControlForm() {
   char *ptr = message;
-  strcpy(ptr, HTMLHEAD); strcat(ptr, "</head>");
+  strcpy(ptr, HTMLHEAD);
+  strcat(ptr, "</head>");
   HTMLBODY(ptr, "control.html");
   for (int i = 0; i < 9; i++) {
     strcat(ptr, "<input class=\"ctlbtn\" type=\"submit\" name=\"");
@@ -846,6 +863,10 @@ const char *createControlForm() {
       strcat(ptr, "<p></p>");
     }
   }
+  strcat(ptr, "</div><div class=\"footer\"><span></span>"
+              "<span class=\"ttgoinfo\">rdzTTGOserver ");
+  strcat(ptr, version_id);
+  strcat(ptr, "</span>");
   HTMLBODYEND(ptr);
   Serial.printf("Control form: size=%d bytes\n", strlen(message));
   return message;
@@ -1186,13 +1207,14 @@ void SetupAsyncServer() {
     request->send(200, "text/html", createWIFIForm());
   });
 
-  server.on("/map.html", HTTP_GET,  [](AsyncWebServerRequest * request) {
-    request->send(200, "text/html", createSondeHubMap());
-  });
-  server.on("/map.html", HTTP_POST, [](AsyncWebServerRequest * request) {
-    handleWIFIPost(request);
-    request->send(200, "text/html", createSondeHubMap());
-  });
+
+//  server.on("/map.html", HTTP_GET,  [](AsyncWebServerRequest * request) {
+//    request->send(200, "text/html", createSondeHubMap());
+//  });
+//  server.on("/map.html", HTTP_POST, [](AsyncWebServerRequest * request) {
+//    handleWIFIPost(request);
+//    request->send(200, "text/html", createSondeHubMap());
+//  });
 
   server.on("/config.html", HTTP_GET,  [](AsyncWebServerRequest * request) {
     request->send(200, "text/html", createConfigForm());
@@ -1276,11 +1298,6 @@ void SetupAsyncServer() {
     AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/style.css", "text/css");
     response->addHeader("Cache-Control", "max-age=86400");
     request->send(response);
-  });
-
-  // Route to set GPIO to HIGH
-  server.on("/test.php", HTTP_POST, [](AsyncWebServerRequest * request) {
-    request->send(SPIFFS, "/index.html", String(), false, processor);
   });
 
   server.on("/live.kml", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -1489,6 +1506,7 @@ void gpsTask(void *parameter) {
               gpsPos.course = lastCourse;
             }
           }
+	  if(gpsPos.lon == 0 && gpsPos.lat == 0) gpsPos.valid = false;
         }
         gpsPos.hdop = nmea.getHDOP();
         gpsPos.sat = nmea.getNumSatellites();
@@ -1880,27 +1898,6 @@ void setup()
   axpSemaphore = xSemaphoreCreateBinary();
   xSemaphoreGive(axpSemaphore);
 
-#if 0
-  delay(2000);
-  // temporary test
-  volatile uint32_t *ioport = portOutputRegister(digitalPinToPort(4));
-  uint32_t portmask = digitalPinToBitMask(4);
-  int t = millis();
-  for (int i = 0; i < 10000000; i++) {
-    digitalWrite(4, LOW);
-    digitalWrite(4, HIGH);
-  }
-  int res = millis() - t;
-  Serial.printf("Duration w/ digitalWriteo: %d\n", res);
-
-  t = millis();
-  for (int i = 0; i < 10000000; i++) {
-    *ioport |=  portmask;
-    *ioport &= ~portmask;
-  }
-  res = millis() - t;
-  Serial.printf("Duration w/ fast io: %d\n", res);
-#endif
   for (int i = 0; i < 39; i++) {
     Serial.printf("%d:%d ", i, initlevels[i]);
   }
@@ -1917,6 +1914,7 @@ void setup()
 
   Serial.println("Reading initial configuration");
   setupConfigData();    // configuration must be read first due to OLED ports!!!
+  WiFi.setHostname(sonde.config.mdnsname);
 
   // NOT TTGO v1 (fingerprint 64) or Heltec v1/v2 board (fingerprint 4)
   // and NOT TTGO Lora32 v2.1_1.6 (fingerprint 31/63)
@@ -2258,6 +2256,7 @@ void parseGpsJson(char *data) {
       value = NULL;
     }
   }
+  if(gpsPos.lat == 0 && gpsPos.lon == 0) gpsPos.valid = false;
   Serial.printf("Parse result: lat=%f, lon=%f, alt=%d, valid=%d\n", gpsPos.lat, gpsPos.lon, gpsPos.alt, gpsPos.valid);
 }
 
@@ -3287,7 +3286,7 @@ void aprs_station_update() {
     lon = sonde.config.rxlon;
     if (isnan(lat) || isnan(lon)) return;
   } else {
-    if (gpsPos.valid && gpsPos.lat != 0 && gpsPos.lon != 0) {
+    if (gpsPos.valid) {
       lat = gpsPos.lat;
       lon = gpsPos.lon;
     } else {
@@ -3373,7 +3372,7 @@ void sondehub_station_update(WiFiClient * client, struct st_sondehub * conf) {
 
   // We send GPS position: (a) in CHASE mode, (b) in AUTO mode if no fixed location has been specified in config
   if (chase == SH_LOC_CHASE) {
-    if (gpsPos.valid && gpsPos.lat != 0 && gpsPos.lon != 0) {
+    if (gpsPos.valid) {
       sprintf(w,
               "\"uploader_position\": [%.6f,%.6f,%d],"
               "\"mobile\": true",
@@ -3700,7 +3699,7 @@ void sondehub_send_data(WiFiClient * client, SondeInfo * s, struct st_sondehub *
 
   // We send GPS position: (a) in CHASE mode, (b) in AUTO mode if no fixed location has been specified in config
   if (chase == SH_LOC_CHASE) {
-    if (gpsPos.valid && gpsPos.lat != 0 && gpsPos.lon != 0) {
+    if (gpsPos.valid) {
       sprintf(w, "\"uploader_position\": [%.6f,%.6f,%d]", gpsPos.lat, gpsPos.lon, gpsPos.alt);
     } else {
       sprintf(w, "\"uploader_position\": [null,null,null]");
