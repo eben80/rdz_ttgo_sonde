@@ -510,9 +510,9 @@ void addSondeStatus(char *ptr, int i)
             s->d.burstKT, s->d.launchKT, s->d.countKT, ((uint16_t)s->d.frame - s->d.crefKT), sonde.si()->rssi/2, (sonde.si()->rssi&1)?'5':'0');
   }
 #ifdef DEVICE_GPS_LOG
-  if (nmea.isValid())
+  if (gpsPos.valid)
   {
-    sprintf(ptr + strlen(ptr), "<tr><td>Tracker GPS: %.6f, %.6f sats=%d heading=%ld&deg; hdop=%d</td></tr>\n", float(nmea.getLatitude()) / 1000000, float(nmea.getLongitude()) / 1000000, nmea.getNumSatellites(), nmea.getCourse() / 1000, nmea.getHDOP());
+    sprintf(ptr + strlen(ptr), "<tr><td>Tracker GPS: %.6f, %.6f sats=%d heading=%ld&deg; hdop=%d</td></tr>\n", float(gpsPos.lat), float(gpsPos.lon), gpsPos.sat, gpsPos.course, gpsPos.hdop);
   }
 #endif
   sprintf(ptr + strlen(ptr), "<tr><td><a target=\"_empty\" href=\"geo:%.6f,%.6f\">GEO-App</a> - ", s->d.lat, s->d.lon);
