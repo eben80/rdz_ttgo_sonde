@@ -1,9 +1,12 @@
 #include <U8x8lib.h>
 #include <U8g2lib.h>
 
+#include "../features.h"
 #include "Sonde.h"
 #include "RS41.h"
+#if FEATURE_RS92
 #include "RS92.h"
+#endif
 #include "DFM.h"
 #include "M10M20.h"
 #include "MP3H.h"
@@ -25,6 +28,7 @@ const char *sondeTypeStr[NSondeTypes] = { "DFM ", "RS41", "RS92", "Mxx ", "M10 "
 const char *sondeTypeLongStr[NSondeTypes] = { "DFM (all)", "RS41", "RS92", "M10/M20", "M10 ", "M20 ", "MP3-H1" };
 const char sondeTypeChar[NSondeTypes] = { 'D', '4', 'R', 'M', 'M', '2', '3' };
 const char *manufacturer_string[]={"Graw", "Vaisala", "Vaisala", "Meteomodem", "Meteomodem", "Meteomodem", "Meteo-Radiy"};
+const char *DEFEPH="gssc.esa.int/gnss/data/daily/%1$04d/brdc/brdc%2$03d0.%3$02dn.gz";
 
 int fingerprintValue[]={ 17, 31, 64, 4, 55, 48, 23, 128+23, 119, 128+119, -1 };
 const char *fingerprintText[]={
@@ -255,7 +259,7 @@ void Sonde::defaultConfig() {
 	config.tcpfeed.port = 12345;
 	config.tcpfeed.highrate = 10;
 	config.kisstnc.active = 0;
-	strcpy(config.ephftp,"igs.bkg.bund.de/IGS/BRDC/");
+        strcpy(config.ephftp,DEFEPH);
 
 	config.mqtt.active = 0;
 	strcpy(config.mqtt.id, "rdz_sonde_server");
@@ -275,6 +279,8 @@ void Sonde::checkConfig() {
 	if(config.sondehub.fimaxage>48) config.sondehub.fimaxage = 48;
 	if(config.sondehub.fimaxdist==0) config.sondehub.fimaxdist = 150;
 	if(config.sondehub.fimaxage==0) config.sondehub.fimaxage = 2;
+        // auto upgrade config to new version with format arguments in string
+        if(!strchr(sonde.config.ephftp,'%')) strcpy(sonde.config.ephftp,DEFEPH);
 }
 void Sonde::setConfig(const char *cfg) {
 	while(*cfg==' '||*cfg=='\t') cfg++;
@@ -431,7 +437,9 @@ void Sonde::setup() {
 		dfm.setup( sondeList[rxtask.currentSonde].freq * 1000000, sondeList[rxtask.currentSonde].type );
 		break;
 	case STYPE_RS92:
+#if FEATURE_RS92
 		rs92.setup( sondeList[rxtask.currentSonde].freq * 1000000);
+#endif
 		break;
 	case STYPE_M10:
 	case STYPE_M20:
@@ -462,7 +470,9 @@ void Sonde::receive() {
 		res = rs41.receive();
 		break;
 	case STYPE_RS92:
+#if FEATURE_RS92
 		res = rs92.receive();
+#endif
 		break;
 	case STYPE_M10:
 	case STYPE_M20:
@@ -562,7 +572,9 @@ rxloop:
 		rs41.waitRXcomplete();
 		break;
 	case STYPE_RS92:
+#if FEATURE_RS92
 		rs92.waitRXcomplete();
+#endif
 		break;
 	case STYPE_M10:
 	case STYPE_M20:
