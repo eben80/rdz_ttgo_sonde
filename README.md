@@ -118,5 +118,5 @@ For TTGO boards without configurable button there are some new parameter in conf
 
 ## Setup
 
-see Setup.md
+see [Wiki](https://github.com/dl9rdz/rdz_ttgo_sonde/wiki/Installation)
 
