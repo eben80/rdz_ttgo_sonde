@@ -39,6 +39,7 @@
 
 #include "src/pmu.h"
 #include "src/user.h"
+#include "src/utils.h"
 
 
 /* Data exchange connectors */
@@ -88,9 +89,9 @@ NULL };
 //#define ESP_MEM_DEBUG 1
 //int e;
 
-enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB, ST_RINEX_UPDATE, ST_FORMAT_SD };
+enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB, ST_RINEX_UPDATE, ST_FORMAT_SD, ST_GROUND_FINDING };
 static MainState mainState = ST_WIFISCAN;
-const char *mainStateStr[] = {"DECODER", "SPECTRUM", "WIFISCAN", "UPDATE", "TOUCHCALIB", "RINEXUPDATE", "FORMATSD" };
+const char *mainStateStr[] = {"DECODER", "SPECTRUM", "WIFISCAN", "UPDATE", "TOUCHCALIB", "RINEXUPDATE", "FORMATSD", "GROUND" };
 
 AsyncWebServer server(80);
 
@@ -830,6 +831,7 @@ struct st_configitems config_list[] = {
   {"gps_rxd", 0, &sonde.config.gps_rxd},
   {"gps_txd", 0, &sonde.config.gps_txd},
   {"batt_adc", 0, &sonde.config.batt_adc},
+  {"piezo_pin", 0, &sonde.config.piezo_pin},
 #if 1
   {"sx1278_ss", 0, &sonde.config.sx1278_ss},
   {"sx1278_miso", 0, &sonde.config.sx1278_miso},
@@ -2132,6 +2134,9 @@ void setup()
     pinMode(sonde.config.led_pout, OUTPUT);
     flashLed(1000); // testing
   }
+  if (sonde.config.piezo_pin >= 0) {
+    pinMode(sonde.config.piezo_pin, OUTPUT);
+  }
 
   button1.pin = sonde.config.button_pin;
   button2.pin = sonde.config.button2_pin;
@@ -2334,6 +2339,9 @@ static const char *action2text(uint8_t action) {
 static char rdzData[RDZ_DATA_LEN];
 static int rdzDataPos = 0;
 
+// forward declaration
+void loopGroundFinding();
+
 void loopDecoder() {
   // sonde knows the current type and frequency, and delegates to the right decoder
   uint16_t res = sonde.waitRXcomplete();
@@ -2358,7 +2366,11 @@ void loopDecoder() {
     LOG_I(TAG, "loopDecoder: action %02x (%s) => %d  [current: main=%d, rxtask=%d]\n", action, action2text(action), newact, sonde.currentSonde, rxtask.currentSonde);
     action = newact;
     if (action != 255) {
-      if (action == ACT_DISPLAY_SPECTRUM) {
+      if (action == ACT_DISPLAY_GROUND_FINDING) {
+        enterMode(ST_GROUND_FINDING);
+        return;
+      }
+      else if (action == ACT_DISPLAY_SPECTRUM) {
         enterMode(ST_SPECTRUM);
         return;
       }
@@ -2511,6 +2523,89 @@ void loopDecoder() {
   int t = millis();
   sonde.updateDisplay();
   LOG_D(TAG, "updateDisplay done (after %d ms)\n", (int)(millis() - t));
+}
+
+static unsigned long last_beep = 0;
+static unsigned long last_update = 0;
+
+void loopGroundFinding() {
+  if (getKeyPressEvent() != EVT_NONE) {
+    noTone(sonde.config.piezo_pin);
+    enterMode(ST_DECODER);
+    return;
+  }
+
+  unsigned long current_millis = millis();
+
+  if (current_millis - last_update > 500) {
+    last_update = current_millis;
+
+    SondeInfo *s = sonde.si();
+    disp.rdis->clear();
+    disp.rdis->drawString(0, 0, "Ground Finding");
+
+    if (!s->d.validID || !gpsPos.valid) {
+      disp.rdis->drawString(0, 2, "No GPS or Sonde");
+      disp.rdis->drawString(0, 3, "Signal");
+      noTone(sonde.config.piezo_pin);
+      return;
+    }
+
+    float lat1 = radians(gpsPos.lat);
+    float lon1 = radians(gpsPos.lon);
+    float lat2 = radians(s->d.lat);
+    float lon2 = radians(s->d.lon);
+
+    float dLon = lon2 - lon1;
+    float y = sin(dLon) * cos(lat2);
+    float x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
+    float bearing = degrees(atan2(y, x));
+    if (bearing < 0) {
+      bearing += 360;
+    }
+
+    float distance = calcLatLonDist(gpsPos.lat, gpsPos.lon, s->d.lat, s->d.lon);
+    float bearing_diff = bearing - gpsPos.course;
+    if (bearing_diff < 0) {
+      bearing_diff += 360;
+    }
+    if (bearing_diff > 180) {
+      bearing_diff = 360 - bearing_diff;
+    }
+
+    // Frequency mapping
+    int freq = 2000 - (bearing_diff * 10);
+    if (freq < 200) {
+      freq = 200;
+    }
+
+    // Distance to beep/pause mapping
+    int pause_duration = map(distance, 0, 1000, 0, 3000);
+    if (pause_duration < 0) {
+      pause_duration = 0;
+    }
+    if (pause_duration > 3000) {
+      pause_duration = 3000;
+    }
+    int beep_duration = 100;
+
+    if (current_millis - last_beep > beep_duration + pause_duration) {
+      last_beep = current_millis;
+      tone(sonde.config.piezo_pin, freq, beep_duration);
+    }
+
+    // Display
+    char buf[32];
+    snprintf(buf, sizeof(buf), "Bearing: %d", (int)bearing);
+    disp.rdis->drawString(0, 2, buf);
+    snprintf(buf, sizeof(buf), "Distance: %.2f m", distance);
+    disp.rdis->drawString(0, 3, buf);
+    snprintf(buf, sizeof(buf), "Heading: %d", gpsPos.course);
+    disp.rdis->drawString(0, 4, buf);
+    int rssi = s->rssi;
+    snprintf(buf, sizeof(buf), "RSSI: %d", rssi);
+    disp.rdis->drawString(0, 5, buf);
+  }
 }
 
 void setCurrentDisplay(int value) {
@@ -3325,6 +3420,7 @@ void loop() {
       delay(1000);
 #endif
       break;
+    case ST_GROUND_FINDING: loopGroundFinding(); break;
     case ST_SPECTRUM: loopSpectrum(); break;
     case ST_WIFISCAN: loopWifiScan(); break;
     case ST_UPDATE: execOTA(); break;

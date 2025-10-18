@@ -60,8 +60,9 @@ extern const char *RXstr[];
 #define ACT_DISPLAY_SCANNER 0
 #define ACT_DISPLAY_NEXT 64
 #define ACT_DISPLAY_DEFAULT 63
-#define ACT_DISPLAY_SPECTRUM 62
-#define ACT_DISPLAY_WIFI 61
+#define ACT_DISPLAY_GROUND_FINDING 62
+#define ACT_DISPLAY_SPECTRUM 61
+#define ACT_DISPLAY_WIFI 60
 #define ACT_NEXTSONDE 65
 #define ACT_PREVSONDE 66
 #define ACT_ADDFREQ(n) ((n)+64)
@@ -285,6 +286,7 @@ typedef struct st_rdzconfig {
 	int gps_rxd;			// GPS module RXD pin. We expect 9600 baud NMEA data.
 	int gps_txd;			// GPS module TXD pin
 	int batt_adc;			// Pin for ADC battery measurement (GPIO35 on TTGO V2.1_1.6)
+	int piezo_pin;			// Piezo beeper pin
 	int sx1278_ss;			// SPI slave select for sx1278
 	int sx1278_miso;		// SPI MISO for sx1278
 	int sx1278_mosi;		// SPI MOSI for sx1278

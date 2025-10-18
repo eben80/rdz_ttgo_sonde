@@ -10,7 +10,7 @@
 #include "Display.h"
 #include "Sonde.h"
 #include "pmu.h"
-
+#include "utils.h"
 
 int readLine(Stream &stream, char *buffer, int maxlen);
 
@@ -131,7 +131,7 @@ int16_t legacyTimeouts[] = { -1, -1, 20000 };
 uint8_t legacyActions[] = {
 	ACT_NONE,
 	ACT_NEXTSONDE, ACT_DISPLAY(0), ACT_DISPLAY_SPECTRUM, ACT_DISPLAY_WIFI,
-	ACT_DISPLAY(2), ACT_NONE, ACT_NONE, ACT_NONE,
+	ACT_DISPLAY_GROUND_FINDING, ACT_NONE, ACT_NONE, ACT_NONE,
 	ACT_NONE, ACT_NONE, ACT_DISPLAY(0)};
 DispEntry fieldLayout[] = {
 	{2, 0, FONT_LARGE, -1, 0xFFFF, 0, disp.drawLat, NULL},
@@ -1493,13 +1493,6 @@ void Display::drawKilltimer(DispEntry *de) {
 
 extern int lastCourse; // from RX_FSK.ino
 
-
-float calcLatLonDist(float lat1, float lon1, float lat2, float lon2) {
-	float x = radians(lon1-lon2) * cos( radians((lat1+lat2)/2) );
-	float y = radians(lat2-lat1);
-	float d = sqrt(x*x+y*y)*EARTH_RADIUS;
-	return d;
-}
 
 void Display::calcGPS() {
 	float mylat = sonde.config.rxlat;

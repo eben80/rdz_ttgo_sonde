@@ -152,6 +152,7 @@ void Sonde::defaultConfig() {
 	config.gps_rxd = -1;
 	config.gps_txd = -1;
 	config.batt_adc = -1;
+	config.piezo_pin = -1;
 	config.sx1278_ss = SS; // default SS pin, on all TTGOs
 	config.sx1278_miso = MISO;
 	config.sx1278_mosi = MOSI;
