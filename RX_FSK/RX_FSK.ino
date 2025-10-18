@@ -972,17 +972,18 @@ const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "
 #if FEATURE_SDCARD
 	"format",
 #endif
-        "reboot"};
+        "reboot", "test_buzzer"};
 
 const char *ctrllabel[] = {"Receiver/next freq. (short keypress)", "Scanner (double keypress)", "Spectrum (medium keypress)", "WiFi (long keypress)",
-                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)", "Ground Finding Mode",
+                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)", "Ground Finding",
 #if FEATURE_RS92
                            "Update RS92 RINEX eph",
 #endif
 #if FEATURE_SDCARD
 			   "Format SD Card",
 #endif
-			   "Reboot"
+			   "Reboot",
+			   "Test Buzzer"
                           };
 
 const char *createControlForm() {
@@ -1067,6 +1068,12 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
     else if (param.equals("reboot")) {
       Serial.println("equals reboot");
       ESP.restart();
+    }
+    else if (param.equals("test_buzzer")) {
+      Serial.println("equals test_buzzer");
+      if (sonde.config.piezo_pin >= 0) {
+        tone(sonde.config.piezo_pin, 1000, 500);
+      }
     }
   }
   return "";
@@ -2550,6 +2557,7 @@ void loopGroundFinding() {
 
     SondeInfo *s = sonde.si();
     disp.rdis->clear();
+    disp.rdis->setFont(FONT_SMALL);
     disp.rdis->drawString(0, 0, "Ground Finding");
 
     if (!s->d.validID || !gpsPos.valid) {
@@ -3460,5 +3468,3 @@ void loop() {
   delay(1000);
 #endif
 }
-
-

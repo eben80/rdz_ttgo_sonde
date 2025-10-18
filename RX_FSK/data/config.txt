@@ -1,1 +1,158 @@
+#-------------------------------#
+# Hardware depending settings
+#-------------------------------#
+# pin: 255=disabled; x=button x+128=touch button
+#button_pin=130
+#button2_pin=142
+# No specification in config file: try autodetection (gpio4 pin level at startup)
+#button_pin=0
+#button2_pin=255
+#button2_axp=0
+# LED port
+#led_pout=-1
+# OLED Setup is depending on hardware of LoRa board
+# TTGO v1:  SDA=4  SCL=15, RST=16
+# TTGO v2:  SDA=21 SCL=22, RST=16
+# T-BEAM, OLED: SDA=21, SCL=22, RST=16
+# T-BEAM, ILI9225: SDA=4, CLK=21, RS=2, RST=22, CS=0
+# No specification in config file: try autodetection (gpio4 pin level at startup)
+#
+# disptype: 0=OLED, 1=ILI9225
+#disptype=0
+#oled_sda=21
+#oled_scl=22
+#oled_rst=16
+#tft_rs=2
+#tft_cs=0
+rxlat=
+rxlon=
+rxalt=
+b2mute=360
+tft_orient=1
+#tft_spifreq=40000000
+#gps_rxd=-1
+#gps_txd=-1
+# Frequency correction, in Hz
+# freqofs=0
+#-------------------------------#
+# General config settings
+#-------------------------------#
+maxsonde=20
+# debug: 0=err, 1=warn, 2=info, 3=debug; +10:use color
+debug=12
+# wifi mode: 1=client in background; 2=AP in background; 3=client on startup, ap if failure
+wifi=3
+# TCP/IP KISS TNC in port 14590 for APRSdroid (0=disabled, 1=enabled)
+kisstnc.active = 1
+
+# which screens file to use (0: automated selection based on display type and orientation, i>0: screens${i}.txt
+# predefined: 1: for OLED, 2: for ILI9225; 3: for ILI9225 (portrait mode); 4: for ILI9431; 5: for ILI9431 (portrait mode)
+# screenfile=2
+# display configuration. List of "displays"
+# first entry: "Scanner" display
+# second entry: default "Receiver" display
+# additional entries: alternative receiver display, activated by button
+display=0,1,2,3,4
+# turn off display: 0=never, 1=always, 2=if no RX; (+n*10: after n seconds)
+dispsaver=0
+# set OLED contrast (0..255) or leave at factory default (-1)
+dispcontrast=-1
+# set to -1 to disable (used for "N" values in timers in screens.txt). Value in seconds
+norx_timeout=20
+#-------------------------------#
+# Spectrum display settings
+#-------------------------------#
+startfreq=400
+channelbw=10
+spectrum=-1 #10
+noisefloor=-125
+marker=1
+#-------------------------------#
+# APRS settings
+#-------------------------------#
+call=N0CALL
+passcode=12345
+#-------------------------------#
+# Sonde specific settings: bandwidth
+# valid values: 3100, 3900, 5200, 6300, 7800, 10400, 12500,
+# 15600, 20800, 25000, ...
+# other values will be rounded up to the next valid value
+# rs92.alt2d: default altitude used by RS92 decoder if only 3 sats available
+#-------------------------------#
+rs41.agcbw=12500
+rs41.rxbw=6300
+rs92.rxbw=12500
+rs92.alt2d=480
+dfm.agcbw=20800
+dfm.rxbw=10400
+#-------------------------------#
+# ftp server for RINEX data (for RS92)
+# YYYY/DDD/brdcDDD0.YYn.gz is appended
+# s1: igs.bkg.bund.de/IGS/BRDC/
+# s2: www.ngs.noaa.gov/cors/rinex/
+#-------------------------------#
+#ephftp=www.ngs.noaa.gov/cors/rinex/
+#ephftp=igs.bkg.bund.de/IGS/BRDC/
+ephftp=gssc.esa.int/gnss/data/daily/
+#-------------------------------#
+# axudp for sending to aprsmap
+#-------------------------------#
+# local use only, do not feed to public services
+# data not sanitized / quality checked, outliers not filtered out
+axudp.active=1
+axudp.host=192.168.42.20
+axudp.port=9002
+axudp.ratelimit=1
+#-------------------------------#
+# connect to some aprs server
+#-------------------------------#
+tcp.active=0
+tcp.host=radiosondy.info:14580
+#tcp.host2=wettersonde.net:14580
+# Currently this is fixed...
+# tcp.symbol=/O
+tcp.highrate=20
+# send beacon (possibly with different call or SSID)
+tcp.chase=0
+tcp.objcall=
+tcp.beaconsym=/`/(
+tcp.comment=
+#-------------------------------#
+# mqtt settings
+#-------------------------------#
+# data not sanitized / quality checked, outliers not filtered out
+mqtt.active=0
+mqtt.id=rdz_sonde_server
+mqtt.host=192.168.1.5
+mqtt.port=1883
+mqtt.username=
+mqtt.password=
+mqtt.prefix=rdz_sonde_server/
+mqtt.report_interval=60000
+#-------------------------------#
+# Sondehub v2 settings
+#-------------------------------#
+# Sondehub v2 DB settings
+sondehub.active=0
+sondehub.chase=3
+sondehub.host=api.v2.sondehub.org
+sondehub.callsign=CHANGEME_RDZTTGO
+sondehub.antenna=
+sondehub.email=
+#-------------------------------#
+# Sondehub freq import settings
+#-------------------------------#
+sondehub.fiactive=0
+sondehub.fiinterval=60
+sondehub.fimaxdist=150
+sondehub.fimaxage=6
+#-------------------------------#
+# Sondeseeker settings
+#-------------------------------#
+ss.active=1
+ss.host=239.255.0.1
+ss.port=62655
+#-------------------------------#
+# EOF
+#-------------------------------#
 piezo_pin=25
