@@ -965,7 +965,7 @@ const char *handleConfigPost(AsyncWebServerRequest * request) {
   return "";
 }
 
-const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "wifi2",
+const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "wifi2", "ground",
 #if FEATURE_RS92
 	"rinex",
 #endif
@@ -975,7 +975,7 @@ const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "
         "reboot"};
 
 const char *ctrllabel[] = {"Receiver/next freq. (short keypress)", "Scanner (double keypress)", "Spectrum (medium keypress)", "WiFi (long keypress)",
-                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)",
+                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)", "Ground Finding Mode",
 #if FEATURE_RS92
                            "Update RS92 RINEX eph",
 #endif
@@ -991,6 +991,9 @@ const char *createControlForm() {
   strcat(ptr, "</head>");
   HTMLBODY(ptr, "control.html");
   for (int i = 0; i < sizeof(ctrllabel)/sizeof((ctrllabel)[0]); i++) {
+    if (strcmp(ctrlid[i], "ground") == 0 && sonde.config.piezo_pin < 0) {
+      continue;
+    }
     strcat(ptr, "<input class=\"ctlbtn\" type=\"submit\" name=\"");
     strcat(ptr, ctrlid[i]);
     strcat(ptr, "\" value=\"");
@@ -1006,6 +1009,7 @@ const char *createControlForm() {
   strcat(ptr, "</span>");
   HTMLBODYEND(ptr);
   LOG_I(TAG, "Control form: size=%d bytes\n", strlen(message));
+  Serial.println(message);
   return message;
 }
 
@@ -1047,6 +1051,10 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
     else if (param.equals("wifi2")) {
       Serial.println("equals wifi2");
       button2.pressed = KP_LONG;
+    }
+    else if (param.equals("ground")) {
+      Serial.println("equals ground");
+      enterMode(ST_GROUND_FINDING);
     }
     else if (param.equals("rinex")) {
       Serial.println("equals rinex");
