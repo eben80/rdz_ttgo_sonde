@@ -103,6 +103,7 @@ var cfgs = [
 [ "gps_rxd", "GPS RXD pin (-1 to disable)"],
 [ "gps_txd", "GPS TXD pin (optional, only for GSP reset)"],
 [ "batt_adc", "Battery measurement pin"],
+[ "piezo_pin", "Piezo beeper pin"],
 [ "sx1278_ss", "SX1278 SS"],
 [ "sx1278_miso", "SX1278 MISO"],
 [ "sx1278_mosi", "SX1278 MOSI"],
