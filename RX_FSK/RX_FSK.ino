@@ -965,24 +965,24 @@ const char *handleConfigPost(AsyncWebServerRequest * request) {
   return "";
 }
 
-const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "wifi2", "ground", "test_buzzer",
+const char *ctrlid[] = {"rx", "scan", "spec", "ground", "wifi", "rx2", "scan2", "spec2", "wifi2",
 #if FEATURE_RS92
 	"rinex",
 #endif
 #if FEATURE_SDCARD
 	"format",
 #endif
-        "reboot"};
+        "test_buzzer", "reboot"};
 
-const char *ctrllabel[] = {"Receiver/next freq. (short keypress)", "Scanner (double keypress)", "Spectrum (medium keypress)", "WiFi (long keypress)",
-                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)", "Ground Finding", "Test Buzzer",
+const char *ctrllabel[] = {"Receiver/next freq. (short keypress)", "Scanner (double keypress)", "Spectrum (medium keypress)", "Ground Finding", "WiFi (long keypress)",
+                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)",
 #if FEATURE_RS92
                            "Update RS92 RINEX eph",
 #endif
 #if FEATURE_SDCARD
 			   "Format SD Card",
 #endif
-			   "Reboot"
+                           "Test Buzzer", "Reboot"
                           };
 
 const char *createControlForm() {
