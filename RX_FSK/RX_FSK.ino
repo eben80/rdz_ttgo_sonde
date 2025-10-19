@@ -3389,8 +3389,13 @@ int fetchHTTPheader(int *validType) {
 
 
 void loop() {
-  // LOG_I(TAG, "Running loop in state %d [currentDisp:%d, lastDisp:%d]. free heap: %d, unused stack: %d\n",
-  //              mainState, currentDisplay, lastDisplay, ESP.getFreeHeap(), uxTaskGetStackHighWaterMark(0));
+  static unsigned long last_log_update = 0;
+  unsigned long current_time = millis();
+  if (current_time - last_log_update > 1000) {
+    last_log_update = current_time;
+    LOG_I(TAG, "Running loop in state %d [currentDisp:%d, lastDisp:%d]. free heap: %d, unused stack: %d\n",
+                  mainState, currentDisplay, lastDisplay, ESP.getFreeHeap(), uxTaskGetStackHighWaterMark(0));
+  }
 
   Log.handleImprov();
 
