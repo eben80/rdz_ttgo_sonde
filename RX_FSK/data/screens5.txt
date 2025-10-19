@@ -336,11 +336,3 @@ key2action=D,D,D,D
 1,0,8=r
 2,0,8=gB
 3,0,8=gD5
-
-@Ground
-key1action=D,D,D,D
-key2action=D,D,D,D
-0,0,8=xGnd Find
-1,0,8=r
-2,0,8=gB
-3,0,8=gD5
