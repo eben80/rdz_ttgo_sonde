@@ -185,7 +185,7 @@ uint8_t gpsActions[] = {
 	ACT_NONE, ACT_NONE, ACT_NONE};
 
 DispEntry groundLayout[] = {
-	{0, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawText, "Ground Finding"},
+	{0, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawText, "Gnd Find"},
 	{2, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawGPS, "D5"},
 	{3, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawGPS, "B"},
 	{4, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawRSSI, NULL},

@@ -2528,23 +2528,23 @@ void loopDecoder() {
 void loopGroundFinding() {
 	static unsigned long next_action = 0;
 	static bool is_beeping = false;
+	static unsigned long last_display_update = 0;
 
-	uint16_t res = sonde.waitRXcomplete();
-	int action = (int)(res >> 8);
-	if (action != ACT_NONE) {
-		int newact = sonde.updateState(action);
-		if (newact != 255) {
-			noTone(sonde.config.piezo_pin);
-			enterMode(ST_DECODER);
-			return;
-		}
+	int event = getKeyPressEvent();
+	if (event != EVT_NONE) {
+		noTone(sonde.config.piezo_pin);
+		sonde.updateState(disp.layout->actions[event]);
+		enterMode(ST_DECODER);
+		return;
 	}
 
 	if (!posInfo.valid) {
-		disp.rdis->clear();
-		disp.rdis->drawString(0, 0, "Ground Finding Mode");
-		disp.rdis->drawString(0, 20, "No GPS position!");
-		delay(1000);
+		if (millis() - last_display_update > 500) {
+			last_display_update = millis();
+			disp.rdis->clear();
+			disp.rdis->drawString(0, 0, "Gnd Find");
+			disp.rdis->drawString(0, 20, "No GPS position!");
+		}
 		return;
 	}
 
@@ -2579,7 +2579,10 @@ void loopGroundFinding() {
 			next_action = current_time + 200; // Beep for 200ms
 		}
 	}
-	sonde.updateDisplay();
+	if (current_time - last_display_update > 500) {
+		last_display_update = current_time;
+		sonde.updateDisplay();
+	}
 }
 
 void setCurrentDisplay(int value) {
