@@ -10,7 +10,6 @@
 #include "Display.h"
 #include "Sonde.h"
 #include "pmu.h"
-#include "utils.h"
 
 
 int readLine(Stream &stream, char *buffer, int maxlen);
@@ -132,7 +131,7 @@ int16_t legacyTimeouts[] = { -1, -1, 20000 };
 uint8_t legacyActions[] = {
 	ACT_NONE,
 	ACT_NEXTSONDE, ACT_DISPLAY(0), ACT_DISPLAY_SPECTRUM, ACT_DISPLAY_WIFI,
-	ACT_DISPLAY_GROUND_FINDING, ACT_NONE, ACT_NONE, ACT_NONE,
+	ACT_DISPLAY(2), ACT_NONE, ACT_DISPLAY_GROUND_FINDING, ACT_NONE,
 	ACT_NONE, ACT_NONE, ACT_DISPLAY(0)};
 DispEntry fieldLayout[] = {
 	{2, 0, FONT_LARGE, -1, 0xFFFF, 0, disp.drawLat, NULL},
@@ -185,12 +184,27 @@ uint8_t gpsActions[] = {
 	ACT_DISPLAY(1), ACT_NONE, ACT_NONE, ACT_NONE,
 	ACT_NONE, ACT_NONE, ACT_NONE};
 
-DispInfo staticLayouts[5] = {
+DispEntry groundLayout[] = {
+	{0, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawText, "Ground Finding"},
+	{2, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawGPS, "D5"},
+	{3, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawGPS, "B"},
+	{4, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawRSSI, NULL},
+	{-1, -1, -1, 0, 0, 0, NULL, NULL},
+};
+uint8_t groundActions[] = {
+	ACT_NONE,
+	ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0),
+	ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0),
+	ACT_NONE, ACT_NONE, ACT_NONE};
+
+DispInfo staticLayouts[6] = {
 	{ searchLayout, searchActions, searchTimeouts, "StaticSearch" },
 	{ legacyLayout, legacyActions, legacyTimeouts, "StaticLegacy" },
 	{ fieldLayout, fieldActions, fieldTimeouts, "StaticField1" },
 	{ field2Layout, field2Actions, fieldTimeouts, "StaticFiel2" },
-	{ gpsLayout, gpsActions, fieldTimeouts, "StaticGPS" } };
+	{ gpsLayout, gpsActions, fieldTimeouts, "StaticGPS" },
+    { groundLayout, groundActions, fieldTimeouts, "StaticGround" }
+};
 
 
 /////////////// Wrapper code for various display
@@ -1494,6 +1508,13 @@ void Display::drawKilltimer(DispEntry *de) {
 
 extern int lastCourse; // from RX_FSK.ino
 
+
+float calcLatLonDist(float lat1, float lon1, float lat2, float lon2) {
+	float x = radians(lon1-lon2) * cos( radians((lat1+lat2)/2) );
+	float y = radians(lat2-lat1);
+	float d = sqrt(x*x+y*y)*EARTH_RADIUS;
+	return d;
+}
 
 void Display::calcGPS() {
 	float mylat = sonde.config.rxlat;

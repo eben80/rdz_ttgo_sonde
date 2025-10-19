@@ -1,4 +1,3 @@
-
 #ifndef Sonde_h
 #define Sonde_h
 
@@ -60,9 +59,9 @@ extern const char *RXstr[];
 #define ACT_DISPLAY_SCANNER 0
 #define ACT_DISPLAY_NEXT 64
 #define ACT_DISPLAY_DEFAULT 63
-#define ACT_DISPLAY_GROUND_FINDING 62
 #define ACT_DISPLAY_SPECTRUM 61
 #define ACT_DISPLAY_WIFI 60
+#define ACT_DISPLAY_GROUND_FINDING 58
 #define ACT_NEXTSONDE 65
 #define ACT_PREVSONDE 66
 #define ACT_ADDFREQ(n) ((n)+64)
@@ -414,4 +413,3 @@ public:
 extern Sonde sonde;
 
 #endif
-

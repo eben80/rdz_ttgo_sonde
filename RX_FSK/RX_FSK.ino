@@ -36,10 +36,10 @@
 #include "src/DFM.h"
 #include "src/json.h"
 #include "src/posinfo.h"
+#include "src/utils.h"
 
 #include "src/pmu.h"
 #include "src/user.h"
-#include "src/utils.h"
 
 
 /* Data exchange connectors */
@@ -91,7 +91,7 @@ NULL };
 
 enum MainState { ST_DECODER, ST_SPECTRUM, ST_WIFISCAN, ST_UPDATE, ST_TOUCHCALIB, ST_RINEX_UPDATE, ST_FORMAT_SD, ST_GROUND_FINDING };
 static MainState mainState = ST_WIFISCAN;
-const char *mainStateStr[] = {"DECODER", "SPECTRUM", "WIFISCAN", "UPDATE", "TOUCHCALIB", "RINEXUPDATE", "FORMATSD", "GROUND" };
+const char *mainStateStr[] = {"DECODER", "SPECTRUM", "WIFISCAN", "UPDATE", "TOUCHCALIB", "RINEXUPDATE", "FORMATSD", "GROUNDFINDING" };
 
 AsyncWebServer server(80);
 
@@ -965,25 +965,24 @@ const char *handleConfigPost(AsyncWebServerRequest * request) {
   return "";
 }
 
-const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "wifi2", "ground",
+const char *ctrlid[] = {"rx", "scan", "spec", "wifi", "rx2", "scan2", "spec2", "wifi2", "ground", "test_buzzer",
 #if FEATURE_RS92
 	"rinex",
 #endif
 #if FEATURE_SDCARD
 	"format",
 #endif
-        "reboot", "test_buzzer"};
+        "reboot"};
 
 const char *ctrllabel[] = {"Receiver/next freq. (short keypress)", "Scanner (double keypress)", "Spectrum (medium keypress)", "WiFi (long keypress)",
-                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)", "Ground Finding",
+                           "Button 2/next screen (short keypress)", "Button 2 (double keypress)", "Button 2 (medium keypress)", "Button 2 (long keypress)", "Ground Finding", "Test Buzzer",
 #if FEATURE_RS92
                            "Update RS92 RINEX eph",
 #endif
 #if FEATURE_SDCARD
 			   "Format SD Card",
 #endif
-			   "Reboot",
-			   "Test Buzzer"
+			   "Reboot"
                           };
 
 const char *createControlForm() {
@@ -992,9 +991,6 @@ const char *createControlForm() {
   strcat(ptr, "</head>");
   HTMLBODY(ptr, "control.html");
   for (int i = 0; i < sizeof(ctrllabel)/sizeof((ctrllabel)[0]); i++) {
-    if ((strcmp(ctrlid[i], "ground") == 0 || strcmp(ctrlid[i], "test_buzzer") == 0) && sonde.config.piezo_pin < 0) {
-      continue;
-    }
     strcat(ptr, "<input class=\"ctlbtn\" type=\"submit\" name=\"");
     strcat(ptr, ctrlid[i]);
     strcat(ptr, "\" value=\"");
@@ -1010,7 +1006,6 @@ const char *createControlForm() {
   strcat(ptr, "</span>");
   HTMLBODYEND(ptr);
   LOG_I(TAG, "Control form: size=%d bytes\n", strlen(message));
-  Serial.println(message);
   return message;
 }
 
@@ -1054,8 +1049,10 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
       button2.pressed = KP_LONG;
     }
     else if (param.equals("ground")) {
-      Serial.println("equals ground");
       enterMode(ST_GROUND_FINDING);
+    }
+    else if (param.equals("test_buzzer")) {
+      tone(sonde.config.piezo_pin, 1000, 500);
     }
     else if (param.equals("rinex")) {
       Serial.println("equals rinex");
@@ -1068,12 +1065,6 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
     else if (param.equals("reboot")) {
       Serial.println("equals reboot");
       ESP.restart();
-    }
-    else if (param.equals("test_buzzer")) {
-      Serial.println("equals test_buzzer");
-      if (sonde.config.piezo_pin >= 0) {
-        tone(sonde.config.piezo_pin, 1000, 500);
-      }
     }
   }
   return "";
@@ -2149,9 +2140,6 @@ void setup()
     pinMode(sonde.config.led_pout, OUTPUT);
     flashLed(1000); // testing
   }
-  if (sonde.config.piezo_pin >= 0) {
-    pinMode(sonde.config.piezo_pin, OUTPUT);
-  }
 
   button1.pin = sonde.config.button_pin;
   button2.pin = sonde.config.button2_pin;
@@ -2318,9 +2306,9 @@ void enterMode(int mode) {
     //scanner.init();
   } else if (mainState == ST_WIFISCAN || mainState == ST_RINEX_UPDATE || mainState == ST_FORMAT_SD) {
     sonde.clearDisplay();
-  }
-  if (mainState != ST_GROUND_FINDING) {
-    noTone(sonde.config.piezo_pin);
+  } else if (mainState == ST_GROUND_FINDING) {
+	  disp.setLayout(5);
+	  sonde.clearDisplay();
   }
 
   if (mode == ST_DECODER) {
@@ -2340,6 +2328,7 @@ static const char *action2text(uint8_t action) {
   if (action == ACT_DISPLAY_DEFAULT) return "Default Display";
   if (action == ACT_DISPLAY_SPECTRUM) return "Spectrum Display";
   if (action == ACT_DISPLAY_WIFI) return "Wifi Scan Display";
+  if (action == ACT_DISPLAY_GROUND_FINDING) return "Ground Finding Display";
   if (action == ACT_NEXTSONDE) return "Go to next sonde";
   if (action == ACT_PREVSONDE) return "presonde (not implemented)";
   if (action == ACT_RINEX_UPDATE) return "update RINEX eph data";
@@ -2356,9 +2345,6 @@ static const char *action2text(uint8_t action) {
 #define RDZ_DATA_LEN 128
 static char rdzData[RDZ_DATA_LEN];
 static int rdzDataPos = 0;
-
-// forward declaration
-void loopGroundFinding();
 
 void loopDecoder() {
   // sonde knows the current type and frequency, and delegates to the right decoder
@@ -2384,11 +2370,7 @@ void loopDecoder() {
     LOG_I(TAG, "loopDecoder: action %02x (%s) => %d  [current: main=%d, rxtask=%d]\n", action, action2text(action), newact, sonde.currentSonde, rxtask.currentSonde);
     action = newact;
     if (action != 255) {
-      if (action == ACT_DISPLAY_GROUND_FINDING) {
-        enterMode(ST_GROUND_FINDING);
-        return;
-      }
-      else if (action == ACT_DISPLAY_SPECTRUM) {
+      if (action == ACT_DISPLAY_SPECTRUM) {
         enterMode(ST_SPECTRUM);
         return;
       }
@@ -2474,7 +2456,6 @@ void loopDecoder() {
     connSondehub.updateSonde( NULL );
 #endif
   }
-
   // Send own position periodically
 #if FEATURE_MQTT
   connMQTT.updateStation( NULL );
@@ -2543,93 +2524,62 @@ void loopDecoder() {
   LOG_D(TAG, "updateDisplay done (after %d ms)\n", (int)(millis() - t));
 }
 
+
 void loopGroundFinding() {
-  static unsigned long last_display_update = 0;
-  static unsigned long last_beep_time = 0;
-  static bool is_beeping = false;
+	static unsigned long next_action = 0;
+	static bool is_beeping = false;
 
-  if (getKeyPressEvent() != EVT_NONE) {
-    enterMode(ST_DECODER);
-    return;
-  }
+	uint16_t res = sonde.waitRXcomplete();
+	int action = (int)(res >> 8);
+	if (action != ACT_NONE) {
+		int newact = sonde.updateState(action);
+		if (newact != 255) {
+			noTone(sonde.config.piezo_pin);
+			enterMode(ST_DECODER);
+			return;
+		}
+	}
 
-  unsigned long current_millis = millis();
-  SondeInfo *s = sonde.si();
+	if (!posInfo.valid) {
+		disp.rdis->clear();
+		disp.rdis->drawString(0, 0, "Ground Finding Mode");
+		disp.rdis->drawString(0, 20, "No GPS position!");
+		delay(1000);
+		return;
+	}
 
-  if (!s->d.validID || !gpsPos.valid) {
-    if(is_beeping) {
-      noTone(sonde.config.piezo_pin);
-      is_beeping = false;
-    }
-    if (current_millis - last_display_update > 500) {
-      last_display_update = current_millis;
-      disp.rdis->clear();
-      disp.rdis->setFont(FONT_SMALL);
-      disp.rdis->drawString(0, 0, "Ground Finding");
-      disp.rdis->drawString(0, 2, "No GPS or Sonde");
-      disp.rdis->drawString(0, 3, "Signal");
-    }
-    return;
-  }
+	SondeInfo *s = &sonde.sondeList[sonde.currentSonde];
+	float distance = NAN, bearing = NAN;
+	if (s->d.validPos) {
+		distance = vincenty_distance(posInfo.lat, posInfo.lon, s->d.lat, s->d.lon, &bearing);
+	}
 
-  // Bearing calculation
-  float lat1 = radians(gpsPos.lat);
-  float lon1 = radians(gpsPos.lon);
-  float lat2 = radians(s->d.lat);
-  float lon2 = radians(s->d.lon);
-  float dLon = lon2 - lon1;
-  float y = sin(dLon) * cos(lat2);
-  float x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(dLon);
-  float bearing = degrees(atan2(y, x));
-  if (bearing < 0) {
-    bearing += 360;
-  }
-  float bearing_diff = bearing - gpsPos.course;
-  if (bearing_diff < 0) bearing_diff += 360;
-  if (bearing_diff > 180) bearing_diff = 360 - bearing_diff;
-
-  // Frequency mapping
-  int freq = 2000 - (bearing_diff * 10);
-  if (freq < 200) freq = 200;
-
-  // Distance to pause mapping
-  float distance = calcLatLonDist(gpsPos.lat, gpsPos.lon, s->d.lat, s->d.lon);
-  int pause_duration = map(distance, 0, 1000, 0, 3000);
-  if (pause_duration < 0) pause_duration = 0;
-  if (pause_duration > 3000) pause_duration = 3000;
-  int beep_duration = 100; // constant beep duration
-
-  if (is_beeping) {
-    if (current_millis - last_beep_time > beep_duration) {
-      noTone(sonde.config.piezo_pin);
-      is_beeping = false;
-      last_beep_time = current_millis;
-    }
-  } else {
-    if (current_millis - last_beep_time > pause_duration) {
-      tone(sonde.config.piezo_pin, freq);
-      is_beeping = true;
-      last_beep_time = current_millis;
-    }
-  }
-
-  // Display update
-  if (current_millis - last_display_update > 500) {
-    last_display_update = current_millis;
-    int rssi = s->rssi;
-    disp.rdis->clear();
-    disp.rdis->setFont(FONT_SMALL);
-    disp.rdis->drawString(0, 0, "Ground Finding");
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Bearing: %d", (int)bearing);
-    disp.rdis->drawString(0, 2, buf);
-    snprintf(buf, sizeof(buf), "Distance: %.2f m", distance);
-    disp.rdis->drawString(0, 3, buf);
-    snprintf(buf, sizeof(buf), "Heading: %d", gpsPos.course);
-    disp.rdis->drawString(0, 4, buf);
-    snprintf(buf, sizeof(buf), "RSSI: %d", rssi);
-    disp.rdis->drawString(0, 5, buf);
-  }
+	unsigned long current_time = millis();
+	if (current_time >= next_action) {
+		if (is_beeping) {
+			// Stop beeping and start pausing
+			noTone(sonde.config.piezo_pin);
+			is_beeping = false;
+			int pause_duration = 3000;
+			if(!isnan(distance)) {
+				// The closer the sonde, the shorter the pause
+				pause_duration = map(distance, 0, 5000, 0, 3000);
+			}
+			next_action = current_time + pause_duration;
+		} else {
+			// Start beeping
+			if (!isnan(bearing)) {
+				// The more accurate the bearing, the higher the tone
+				float bearing_diff = abs(bearing - posInfo.course);
+				if (bearing_diff > 180) bearing_diff = 360 - bearing_diff;
+				int freq = map(bearing_diff, 0, 180, 2000, 200);
+				tone(sonde.config.piezo_pin, freq);
+			}
+			is_beeping = true;
+			next_action = current_time + 200; // Beep for 200ms
+		}
+	}
+	sonde.updateDisplay();
 }
 
 void setCurrentDisplay(int value) {
@@ -3444,7 +3394,6 @@ void loop() {
       delay(1000);
 #endif
       break;
-    case ST_GROUND_FINDING: loopGroundFinding(); break;
     case ST_SPECTRUM: loopSpectrum(); break;
     case ST_WIFISCAN: loopWifiScan(); break;
     case ST_UPDATE: execOTA(); break;
@@ -3455,6 +3404,7 @@ void loop() {
 #if FEATURE_SDCARD
     case ST_FORMAT_SD: execFormatSD(); break;
 #endif
+    case ST_GROUND_FINDING: loopGroundFinding(); break;
   }
 #if 0
   int rssi = sx1278.getRSSI();
