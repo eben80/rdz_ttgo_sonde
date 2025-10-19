@@ -2526,63 +2526,69 @@ void loopDecoder() {
 
 
 void loopGroundFinding() {
-	static unsigned long next_action = 0;
-	static bool is_beeping = false;
-	static unsigned long last_display_update = 0;
+    static unsigned long next_action = 0;
+    static bool is_beeping = false;
+    static unsigned long last_display_update = 0;
+    static bool no_gps_message_shown = false;
 
-	int event = getKeyPressEvent();
-	if (event != EVT_NONE) {
-		noTone(sonde.config.piezo_pin);
-		sonde.updateState(disp.layout->actions[event]);
-		enterMode(ST_DECODER);
-		return;
-	}
+    int event = getKeyPressEvent();
+    if (event != EVT_NONE) {
+        noTone(sonde.config.piezo_pin);
+        int action = disp.layout->actions[event];
+        if (action < ACT_MAXDISPLAY) {
+            enterMode(ST_DECODER);
+        }
+        return;
+    }
 
-	if (!posInfo.valid) {
-		if (millis() - last_display_update > 500) {
-			last_display_update = millis();
-			disp.rdis->clear();
-			disp.rdis->drawString(0, 0, "Gnd Find");
-			disp.rdis->drawString(0, 20, "No GPS position!");
-		}
-		return;
-	}
+    if (!posInfo.valid) {
+        if (!no_gps_message_shown) {
+            disp.rdis->clear();
+            disp.rdis->drawString(0, 0, "Gnd Find");
+            disp.rdis->drawString(0, 20, "No GPS position!");
+            no_gps_message_shown = true;
+        }
+        delay(100); // Prevent busy-waiting
+        return;
+    }
 
-	SondeInfo *s = &sonde.sondeList[sonde.currentSonde];
-	float distance = NAN, bearing = NAN;
-	if (s->d.validPos) {
-		distance = vincenty_distance(posInfo.lat, posInfo.lon, s->d.lat, s->d.lon, &bearing);
-	}
+    if (no_gps_message_shown) {
+        sonde.clearDisplay();
+        no_gps_message_shown = false;
+    }
 
-	unsigned long current_time = millis();
-	if (current_time >= next_action) {
-		if (is_beeping) {
-			// Stop beeping and start pausing
-			noTone(sonde.config.piezo_pin);
-			is_beeping = false;
-			int pause_duration = 3000;
-			if(!isnan(distance)) {
-				// The closer the sonde, the shorter the pause
-				pause_duration = map(distance, 0, 5000, 0, 3000);
-			}
-			next_action = current_time + pause_duration;
-		} else {
-			// Start beeping
-			if (!isnan(bearing)) {
-				// The more accurate the bearing, the higher the tone
-				float bearing_diff = abs(bearing - posInfo.course);
-				if (bearing_diff > 180) bearing_diff = 360 - bearing_diff;
-				int freq = map(bearing_diff, 0, 180, 2000, 200);
-				tone(sonde.config.piezo_pin, freq);
-			}
-			is_beeping = true;
-			next_action = current_time + 200; // Beep for 200ms
-		}
-	}
-	if (current_time - last_display_update > 500) {
-		last_display_update = current_time;
-		sonde.updateDisplay();
-	}
+    SondeInfo *s = &sonde.sondeList[sonde.currentSonde];
+    float distance = NAN, bearing = NAN;
+    if (s->d.validPos) {
+        distance = vincenty_distance(posInfo.lat, posInfo.lon, s->d.lat, s->d.lon, &bearing);
+    }
+
+    unsigned long current_time = millis();
+    if (current_time >= next_action) {
+        if (is_beeping) {
+            noTone(sonde.config.piezo_pin);
+            is_beeping = false;
+            int pause_duration = 3000;
+            if(!isnan(distance)) {
+                pause_duration = map(constrain(distance, 0, 5000), 0, 5000, 50, 3000);
+            }
+            next_action = current_time + pause_duration;
+        } else {
+            if (!isnan(bearing)) {
+                float bearing_diff = abs(bearing - posInfo.course);
+                if (bearing_diff > 180) bearing_diff = 360 - bearing_diff;
+                int freq = map(constrain(bearing_diff, 0, 180), 0, 180, 2000, 200);
+                tone(sonde.config.piezo_pin, freq, 200);
+            }
+            is_beeping = true;
+            next_action = current_time + 200;
+        }
+    }
+
+    if (current_time - last_display_update > 500) {
+        last_display_update = current_time;
+        sonde.updateDisplay();
+    }
 }
 
 void setCurrentDisplay(int value) {
@@ -3383,8 +3389,8 @@ int fetchHTTPheader(int *validType) {
 
 
 void loop() {
-  LOG_I(TAG, "Running loop in state %d [currentDisp:%d, lastDisp:%d]. free heap: %d, unused stack: %d\n",
-                mainState, currentDisplay, lastDisplay, ESP.getFreeHeap(), uxTaskGetStackHighWaterMark(0));
+  // LOG_I(TAG, "Running loop in state %d [currentDisp:%d, lastDisp:%d]. free heap: %d, unused stack: %d\n",
+  //              mainState, currentDisplay, lastDisplay, ESP.getFreeHeap(), uxTaskGetStackHighWaterMark(0));
 
   Log.handleImprov();
 
