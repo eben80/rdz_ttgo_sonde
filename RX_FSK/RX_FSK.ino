@@ -2532,33 +2532,26 @@ void loopDecoder() {
 void loopGroundFinding() {
     static unsigned long next_action = 0;
     static bool is_beeping = false;
-    static unsigned long last_display_update = 0;
-    static bool no_gps_message_shown = false;
 
-    int event = getKeyPressEvent();
-    if (event != EVT_NONE) {
+    if (getKeyPressEvent() != EVT_NONE) {
         noTone(sonde.config.piezo_pin);
-        int action = disp.layout->actions[event];
-        if (action < ACT_MAXDISPLAY) {
-            enterMode(ST_DECODER);
-        }
+        enterMode(ST_DECODER);
         return;
     }
 
     if (!posInfo.valid) {
-        if (!no_gps_message_shown) {
-            disp.rdis->clear();
-            disp.rdis->drawString(0, 0, "Gnd Find");
-            disp.rdis->drawString(0, 20, "No GPS position!");
-            no_gps_message_shown = true;
+        if (disp.layoutIdx != 6) {
+            disp.setLayout(6);
+            sonde.clearDisplay();
         }
-        delay(100); // Prevent busy-waiting
+        sonde.updateDisplay();
+        delay(100);
         return;
     }
 
-    if (no_gps_message_shown) {
+    if (disp.layoutIdx != 5) {
+        disp.setLayout(5);
         sonde.clearDisplay();
-        no_gps_message_shown = false;
     }
 
     SondeInfo *s = &sonde.sondeList[sonde.currentSonde];

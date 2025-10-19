@@ -197,13 +197,25 @@ uint8_t groundActions[] = {
 	ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0),
 	ACT_NONE, ACT_NONE, ACT_NONE};
 
-DispInfo staticLayouts[6] = {
+DispEntry groundNoGPSLayout[] = {
+	{0, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawText, "Gnd Find"},
+	{2, 0, FONT_SMALL, -1, 0xFFFF, 0, disp.drawText, "No GPS position!"},
+	{-1, -1, -1, 0, 0, 0, NULL, NULL},
+};
+uint8_t groundNoGPSActions[] = {
+	ACT_NONE,
+	ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0),
+	ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0), ACT_DISPLAY(0),
+	ACT_NONE, ACT_NONE, ACT_NONE};
+
+DispInfo staticLayouts[7] = {
 	{ searchLayout, searchActions, searchTimeouts, "StaticSearch" },
 	{ legacyLayout, legacyActions, legacyTimeouts, "StaticLegacy" },
 	{ fieldLayout, fieldActions, fieldTimeouts, "StaticField1" },
 	{ field2Layout, field2Actions, fieldTimeouts, "StaticFiel2" },
 	{ gpsLayout, gpsActions, fieldTimeouts, "StaticGPS" },
-    { groundLayout, groundActions, fieldTimeouts, "StaticGround" }
+    { groundLayout, groundActions, fieldTimeouts, "StaticGround" },
+    { groundNoGPSLayout, groundNoGPSActions, fieldTimeouts, "StaticGroundNoGPS" }
 };
 
 

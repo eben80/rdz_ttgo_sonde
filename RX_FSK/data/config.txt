@@ -53,7 +53,7 @@ kisstnc.active = 1
 # first entry: "Scanner" display
 # second entry: default "Receiver" display
 # additional entries: alternative receiver display, activated by button
-display=0,1,2,3,4,5
+display=0,1,2,3,4,5,6
 # turn off display: 0=never, 1=always, 2=if no RX; (+n*10: after n seconds)
 dispsaver=0
 # set OLED contrast (0..255) or leave at factory default (-1)
