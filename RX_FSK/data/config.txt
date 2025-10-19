@@ -32,6 +32,7 @@ tft_orient=1
 #tft_spifreq=40000000
 #gps_rxd=-1
 #gps_txd=-1
+#piezo_pin=-1
 # Frequency correction, in Hz
 # freqofs=0
 #-------------------------------#
@@ -155,4 +156,3 @@ ss.port=62655
 #-------------------------------#
 # EOF
 #-------------------------------#
-piezo_pin=25

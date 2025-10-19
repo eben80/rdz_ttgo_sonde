@@ -294,7 +294,7 @@ void Sonde::defaultConfig() {
 			config.button2_pin = -1;  // not good with SD-Card: 14 + 128;   // GPIO14 / T6
 			config.led_pout = 25;
 			config.batt_adc = 35; 
-			config.piezo_pin = 25;
+			config.piezo_pin = -1;
 			config.sd.cs = 13;
 			config.sd.miso = 2;
 			config.sd.mosi = 15;
