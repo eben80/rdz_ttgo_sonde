@@ -2535,9 +2535,13 @@ void loopGroundFinding() {
     static unsigned long last_display_update = 0;
     static bool no_gps_message_shown = false;
 
-    if (getKeyPressEvent() != EVT_NONE) {
+    int event = getKeyPressEvent();
+    if (event != EVT_NONE) {
         noTone(sonde.config.piezo_pin);
-        enterMode(ST_DECODER);
+        int action = disp.layout->actions[event];
+        if (action < ACT_MAXDISPLAY) {
+            enterMode(ST_DECODER);
+        }
         return;
     }
 
