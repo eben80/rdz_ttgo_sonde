@@ -328,3 +328,11 @@ color=FFFFFF
 color=79CDCD
 28,13=c
 28,21=bVV
+
+@Ground
+key1action=D,D,D,D
+key2action=D,D,D,D
+0,0,8=xGnd Find
+1,0,8=r
+2,0,8=gB
+3,0,8=gD5

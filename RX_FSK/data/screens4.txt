@@ -572,3 +572,11 @@ color=639AFF
 color=FF0000,000000
 12.7,0.4=Q4
 12.7,18=bVV
+
+@Ground
+key1action=D,D,D,D
+key2action=D,D,D,D
+0,0,8=xGnd Find
+1,0,8=r
+2,0,8=gB
+3,0,8=gD5

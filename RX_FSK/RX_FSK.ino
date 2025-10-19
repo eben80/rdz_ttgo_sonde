@@ -2378,6 +2378,10 @@ void loopDecoder() {
         enterMode(ST_WIFISCAN);
         return;
       }
+      else if (action == ACT_DISPLAY_GROUND_FINDING) {
+        enterMode(ST_GROUND_FINDING);
+        return;
+      }
 #if FEATURE_RS92
       else if (action == ACT_RINEX_UPDATE) {
         enterMode(ST_RINEX_UPDATE);
@@ -2531,13 +2535,9 @@ void loopGroundFinding() {
     static unsigned long last_display_update = 0;
     static bool no_gps_message_shown = false;
 
-    int event = getKeyPressEvent();
-    if (event != EVT_NONE) {
+    if (getKeyPressEvent() != EVT_NONE) {
         noTone(sonde.config.piezo_pin);
-        int action = disp.layout->actions[event];
-        if (action < ACT_MAXDISPLAY) {
-            enterMode(ST_DECODER);
-        }
+        enterMode(ST_DECODER);
         return;
     }
 

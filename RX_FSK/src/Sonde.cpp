@@ -718,7 +718,7 @@ uint8_t Sonde::updateState(uint8_t event) {
 	sonde.sondeList[sonde.currentSonde].lastState = -1;
 
 	// Moving to a different display mode
-	if (event==ACT_DISPLAY_SPECTRUM || event==ACT_DISPLAY_WIFI) {
+	if (event==ACT_DISPLAY_SPECTRUM || event==ACT_DISPLAY_WIFI || event==ACT_DISPLAY_GROUND_FINDING) {
 		// main loop will call setMode() and disable sx1278 background task
 		return event;
 	}
