@@ -2513,6 +2513,7 @@ void loopDecoder() {
 void loopGroundFinding() {
     static unsigned long next_action = 0;
     static bool is_beeping = false;
+    static unsigned long last_display_update = 0;
 
     if (getKeyPressEvent() != EVT_NONE) {
         noTone(sonde.config.piezo_pin);
