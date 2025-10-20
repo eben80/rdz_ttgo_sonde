@@ -1017,39 +1017,20 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
     String param = request->getParam(i)->name();
     Serial.println(param.c_str());
     if (param.equals("rx")) {
-      Serial.println("equals rx");
-      button1.pressed = KP_SHORT;
+        enterMode(ST_DECODER);
     }
     else if (param.equals("scan")) {
-      Serial.println("equals scan");
-      button1.pressed = KP_DOUBLE;
+        disp.setLayout(0);
+        enterMode(ST_DECODER);
     }
     else if (param.equals("spec")) {
-      Serial.println("equals spec");
-      button1.pressed = KP_MID;
+        enterMode(ST_SPECTRUM);
     }
     else if (param.equals("wifi")) {
-      Serial.println("equals wifi");
-      button1.pressed = KP_LONG;
-    }
-    else if (param.equals("rx2")) {
-      Serial.println("equals rx2");
-      button2.pressed = KP_SHORT;
-    }
-    else if (param.equals("scan2")) {
-      Serial.println("equals scan2");
-      button2.pressed = KP_DOUBLE;
-    }
-    else if (param.equals("spec2")) {
-      Serial.println("equals spec2");
-      button2.pressed = KP_MID;
-    }
-    else if (param.equals("wifi2")) {
-      Serial.println("equals wifi2");
-      button2.pressed = KP_LONG;
+        enterMode(ST_WIFISCAN);
     }
     else if (param.equals("ground")) {
-      enterMode(ST_GROUND_FINDING);
+        enterMode(ST_GROUND_FINDING);
     }
     else if (param.equals("test_buzzer")) {
       tone(sonde.config.piezo_pin, 1000, 500);
