@@ -152,6 +152,7 @@ void Sonde::defaultConfig() {
 	config.gps_rxd = -1;
 	config.gps_txd = -1;
 	config.batt_adc = -1;
+	config.piezo_pin = -1;
 	config.sx1278_ss = SS; // default SS pin, on all TTGOs
 	config.sx1278_miso = MISO;
 	config.sx1278_mosi = MOSI;
@@ -293,6 +294,7 @@ void Sonde::defaultConfig() {
 			config.button2_pin = -1;  // not good with SD-Card: 14 + 128;   // GPIO14 / T6
 			config.led_pout = 25;
 			config.batt_adc = 35; 
+			config.piezo_pin = -1;
 			config.sd.cs = 13;
 			config.sd.miso = 2;
 			config.sd.mosi = 15;
@@ -716,7 +718,7 @@ uint8_t Sonde::updateState(uint8_t event) {
 	sonde.sondeList[sonde.currentSonde].lastState = -1;
 
 	// Moving to a different display mode
-	if (event==ACT_DISPLAY_SPECTRUM || event==ACT_DISPLAY_WIFI) {
+	if (event==ACT_DISPLAY_SPECTRUM || event==ACT_DISPLAY_WIFI || event==ACT_DISPLAY_GROUND_FINDING) {
 		// main loop will call setMode() and disable sx1278 background task
 		return event;
 	}
