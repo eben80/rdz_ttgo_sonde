@@ -1035,6 +1035,12 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
     else if (param.equals("test_buzzer")) {
       tone(sonde.config.piezo_pin, 1000, 500);
     }
+    else if (param.equals("ground")) {
+      button2.pressed = KP_LONG;
+    }
+    else if (param.equals("test_buzzer")) {
+      tone(sonde.config.piezo_pin, 1000, 500);
+    }
     else if (param.equals("rinex")) {
       Serial.println("equals rinex");
       button2.pressed = KP_RINEX;
