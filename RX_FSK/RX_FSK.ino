@@ -1021,8 +1021,8 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
       button1.pressed = KP_SHORT;
     }
     else if (param.equals("scan")) {
-      Serial.println("equals scan");
-      button1.pressed = KP_DOUBLE;
+        disp.setLayout(0);
+        enterMode(ST_DECODER);
     }
     else if (param.equals("spec")) {
       Serial.println("equals spec");
@@ -1049,7 +1049,7 @@ const char *handleControlPost(AsyncWebServerRequest * request) {
       button2.pressed = KP_LONG;
     }
     else if (param.equals("ground")) {
-      button2.pressed = KP_LONG;
+      enterMode(ST_GROUND_FINDING);
     }
     else if (param.equals("test_buzzer")) {
       tone(sonde.config.piezo_pin, 1000, 500);
